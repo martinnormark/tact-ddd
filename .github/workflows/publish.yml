@@ -40,12 +40,6 @@ jobs:
       - name: Build package
         run: bun run build --filter @tact-ddd/${{ matrix.package }}
 
-      - name: Set version (manual trigger)
-        if: github.event_name == 'workflow_dispatch'
-        working-directory: ./packages/${{ matrix.package }}
-        run: |
-          bun version ${{ github.event.inputs.version }} --no-git-tag-version
-
       - name: Set version (release trigger)
         if: github.event_name == 'release'
         working-directory: ./packages/${{ matrix.package }}
