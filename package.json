@@ -1,0 +1,10 @@
+{
+  "name": "ddd-ts",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun --filter '*' build"
+  }
+}
