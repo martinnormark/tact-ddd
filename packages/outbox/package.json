@@ -19,14 +19,13 @@
     "build": "tsdown",
     "check-types": "tsc --noEmit"
   },
-  "dependencies": {
-    "@tact-ddd/events": "workspace:*"
-  },
   "devDependencies": {
+    "@tact-ddd/events": "workspace:*",
     "@types/bun": "latest",
     "tsdown": "^0.16.6"
   },
   "peerDependencies": {
+    "@tact-ddd/events": "^0.1.0",
     "typescript": "^5"
   }
 }
