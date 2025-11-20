@@ -1,9 +1,17 @@
 {
-  "name": "outbox",
+  "name": "@ddd-ts/outbox",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ddd-ts/events": "workspace:*"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "tsdown": "^0.16.6"
   },
   "peerDependencies": {
     "typescript": "^5"
