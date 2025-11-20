@@ -47,7 +47,14 @@ jobs:
         working-directory: ./packages/${{ matrix.package }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          bun version $VERSION --no-git-tag-version
+          bun version $VERSION
+
+      - name: Set version (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: ./packages/${{ matrix.package }}
+        run: |
+          VERSION=${{ inputs.version }}
+          bun version $VERSION
 
       - name: Publish to NPM
         working-directory: ./packages/${{ matrix.package }}
