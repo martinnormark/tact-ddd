@@ -38,7 +38,8 @@ jobs:
         run: bun install
 
       - name: Build package
-        run: bun run build --filter @tact-ddd/${{ matrix.package }}
+        working-directory: ./packages/${{ matrix.package }}
+        run: bun run build
 
       - name: Set version (release trigger)
         if: github.event_name == 'release'
