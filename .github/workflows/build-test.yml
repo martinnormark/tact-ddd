@@ -1,6 +1,21 @@
 name: Build & Test
 
-on: push
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".claude/**"
+      - ".cursor/**"
+      - "docs/**"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - ".claude/**"
+      - ".cursor/**"
+      - "docs/**"
 
 jobs:
   publish:
