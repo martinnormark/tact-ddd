@@ -49,6 +49,6 @@ jobs:
 
       - name: Publish to NPM
         working-directory: ./packages/${{ matrix.package }}
-        run: bun publish --access public --log-level debug
+        run: bun publish --access public
         env:
           NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
