@@ -1,6 +1,11 @@
 {
   "name": "@tact-ddd/events",
   "version": "0.1.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/martinnormark/tact-ddd",
+    "directory": "packages/events"
+  },
   "type": "module",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
