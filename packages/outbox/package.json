@@ -1,8 +1,20 @@
 {
   "name": "@tact-ddd/outbox",
   "version": "0.1.0",
-  "module": "index.ts",
   "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit"
