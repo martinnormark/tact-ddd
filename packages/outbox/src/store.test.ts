@@ -90,11 +90,11 @@ describe('OutboxStore', () => {
 
 		const messages = store.getAll();
 		expect(messages.length).toBe(1);
-		expect(messages[0].eventName).toBe('TestEvent');
-		expect(messages[0].status).toBe('pending');
-		expect(messages[0].retryCount).toBe(0);
-		expect(messages[0].correlationId).toBe('corr_456');
-		expect(messages[0].causationId).toBe('cause_789');
+		expect(messages[0]!.eventName).toBe('TestEvent');
+		expect(messages[0]!.status).toBe('pending');
+		expect(messages[0]!.retryCount).toBe(0);
+		expect(messages[0]!.correlationId).toBe('corr_456');
+		expect(messages[0]!.causationId).toBe('cause_789');
 	});
 
 	test('retrieves pending messages up to batch size', async () => {
@@ -116,12 +116,12 @@ describe('OutboxStore', () => {
 
 		await store.add(event);
 		const messages = store.getAll();
-		const messageId = messages[0].id;
+		const messageId = messages[0]!.id;
 
 		await store.markProcessed(messageId);
 
 		const updatedMessages = store.getAll();
-		expect(updatedMessages[0].status).toBe('processed');
+		expect(updatedMessages[0]!.status).toBe('processed');
 	});
 
 	test('marks message as failed with error and increments retry count', async () => {
@@ -130,14 +130,14 @@ describe('OutboxStore', () => {
 
 		await store.add(event);
 		const messages = store.getAll();
-		const messageId = messages[0].id;
+		const messageId = messages[0]!.id;
 
 		await store.markFailed(messageId, 'Connection timeout');
 
 		const updatedMessages = store.getAll();
-		expect(updatedMessages[0].status).toBe('failed');
-		expect(updatedMessages[0].lastError).toBe('Connection timeout');
-		expect(updatedMessages[0].retryCount).toBe(1);
+		expect(updatedMessages[0]!.status).toBe('failed');
+		expect(updatedMessages[0]!.lastError).toBe('Connection timeout');
+		expect(updatedMessages[0]!.retryCount).toBe(1);
 	});
 
 	test('does not return processed messages in pending batch', async () => {
@@ -150,11 +150,11 @@ describe('OutboxStore', () => {
 
 		// Mark first one as processed
 		const messages = store.getAll();
-		await store.markProcessed(messages[0].id);
+		await store.markProcessed(messages[0]!.id);
 
 		const pending = await store.getPending(10);
 		expect(pending.length).toBe(2);
-		expect(pending.some((msg) => msg.id === messages[0].id)).toBe(false);
+		expect(pending.some((msg) => msg.id === messages[0]!.id)).toBe(false);
 	});
 
 	test('serializes event payload correctly', async () => {
@@ -164,7 +164,7 @@ describe('OutboxStore', () => {
 		await store.add(event);
 
 		const messages = store.getAll();
-		const payload = JSON.parse(messages[0].payload as string);
+		const payload = JSON.parse(messages[0]!.payload as string);
 		expect(payload.testId).toBe('test_456');
 		expect(payload.name).toBe('TestEvent');
 	});
