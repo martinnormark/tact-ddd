@@ -1,5 +1,5 @@
 {
-  "name": "@ddd-ts/core",
+  "name": "@tact-ddd/core",
   "module": "index.ts",
   "type": "module",
   "scripts": {

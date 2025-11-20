@@ -1,4 +1,4 @@
-# `@ddd-ts/ids`
+# `@tact-ddd/ids`
 
 **Type-safe, prefixed, and globally unique identifiers for Domain-Driven Design**
 
@@ -18,11 +18,11 @@ Inspired by [Unkey's ID implementation](https://unkey.com).
 ## Installation
 
 ```bash
-npm install @ddd-ts/ids
+npm install @tact-ddd/ids
 # or
-bun add @ddd-ts/ids
+bun add @tact-ddd/ids
 # or
-pnpm add @ddd-ts/ids
+pnpm add @tact-ddd/ids
 ```
 
 ---
@@ -30,7 +30,7 @@ pnpm add @ddd-ts/ids
 ## Quick Start
 
 ```typescript
-import { defineIdType } from '@ddd-ts/ids';
+import { defineIdType } from '@tact-ddd/ids';
 
 // Define a User ID type
 export const UserIdFactory = defineIdType({ prefix: 'usr' });
@@ -125,7 +125,7 @@ An object with the following methods and properties:
 ### Basic Usage
 
 ```typescript
-import { defineIdType } from '@ddd-ts/ids';
+import { defineIdType } from '@tact-ddd/ids';
 
 // Define your ID types
 export const WorkspaceIdFactory = defineIdType({ prefix: 'ws' });
@@ -262,7 +262,7 @@ Create a single source of truth for all your ID prefixes:
 
 ```typescript
 // id-registry.ts
-import { defineIdType } from '@ddd-ts/ids';
+import { defineIdType } from '@tact-ddd/ids';
 
 export const prefixes = {
 	workspace: 'ws',
@@ -407,7 +407,7 @@ Example test patterns:
 
 ```typescript
 import { describe, expect, test } from 'bun:test';
-import { defineIdType } from '@ddd-ts/ids';
+import { defineIdType } from '@tact-ddd/ids';
 
 describe('ID Generation', () => {
 	test('creates valid IDs with correct format', () => {

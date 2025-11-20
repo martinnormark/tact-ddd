@@ -1,15 +1,15 @@
-# `@ddd-ts/core`
+# `@tact-ddd/core`
 
 > A lightweight set of tactical DDD primitives for building domain-driven TypeScript applications.
 
 ## Overview
 
-`@ddd-ts/core` provides the foundational building blocks for implementing Domain-Driven Design patterns in TypeScript. It's designed to be:
+`@tact-ddd/core` provides the foundational building blocks for implementing Domain-Driven Design patterns in TypeScript. It's designed to be:
 
 - **Runtime-light**: Zero external dependencies
 - **Type-first**: Leverages TypeScript generics and structural typing
 - **Framework-agnostic**: Works on Node.js, edge runtimes, and browsers
-- **Composable**: Plays nicely with `@ddd-ts/ids` and `@ddd-ts/events` without circular dependencies
+- **Composable**: Plays nicely with `@tact-ddd/ids` and `@tact-ddd/events` without circular dependencies
 
 ## Design Philosophy
 
@@ -33,11 +33,11 @@ This package deliberately focuses on **tactical DDD primitives only**:
 ## Installation
 
 ```bash
-npm install @ddd-ts/core
+npm install @tact-ddd/core
 # or
-yarn add @ddd-ts/core
+yarn add @tact-ddd/core
 # or
-bun add @ddd-ts/core
+bun add @tact-ddd/core
 ```
 
 ## Core Concepts
@@ -47,8 +47,8 @@ bun add @ddd-ts/core
 Entities are objects with unique identity that persists over time. Two entities are equal if they have the same ID, regardless of their other properties.
 
 ```typescript
-import { Entity } from '@ddd-ts/core';
-import type { UserId } from '@ddd-ts/ids';
+import { Entity } from '@tact-ddd/core';
+import type { UserId } from '@tact-ddd/ids';
 
 export class User extends Entity<UserId> {
 	private email: string;
@@ -84,9 +84,9 @@ user1.equals(user2); // true - same ID
 Aggregates are clusters of entities and value objects treated as a single unit. The aggregate root is the only entry point for modifications and maintains domain event buffers.
 
 ```typescript
-import { AggregateRoot } from '@ddd-ts/core';
-import type { DomainEvent } from '@ddd-ts/events';
-import type { OrderId, CustomerId } from '@ddd-ts/ids';
+import { AggregateRoot } from '@tact-ddd/core';
+import type { DomainEvent } from '@tact-ddd/events';
+import type { OrderId, CustomerId } from '@tact-ddd/ids';
 
 export class OrderCreated implements DomainEvent {
 	readonly name = 'OrderCreated';
@@ -137,14 +137,14 @@ await eventBus.publish(events);
 - Generic `TEvent` parameter for type-safe events
 - Structural compatibility via `DomainEventLike` interface
 
-**Note on dependencies:** The aggregate root uses a minimal `DomainEventLike` interface instead of importing from `@ddd-ts/events`, avoiding circular dependencies. Your domain events just need to have `name` and `occurredAt` properties.
+**Note on dependencies:** The aggregate root uses a minimal `DomainEventLike` interface instead of importing from `@tact-ddd/events`, avoiding circular dependencies. Your domain events just need to have `name` and `occurredAt` properties.
 
 ### Value Object
 
 Value objects are immutable objects defined by their attributes rather than identity. Two value objects are equal if all their properties are equal.
 
 ```typescript
-import { ValueObject } from '@ddd-ts/core';
+import { ValueObject } from '@tact-ddd/core';
 
 interface MoneyProps {
 	currency: string;
@@ -205,7 +205,7 @@ price1.equals(price3); // false - different amounts
 Structured error types for domain invariant violations and business rule failures.
 
 ```typescript
-import { DomainError, InvariantViolation, NotFoundError } from '@ddd-ts/core';
+import { DomainError, InvariantViolation, NotFoundError } from '@tact-ddd/core';
 
 // Base domain error
 export class OrderError extends DomainError {
@@ -239,7 +239,7 @@ export class InsufficientInventory extends OrderError {
 Helper function for enforcing domain invariants with type narrowing.
 
 ```typescript
-import { ensure } from '@ddd-ts/core';
+import { ensure } from '@tact-ddd/core';
 
 export class OrderLine extends Entity<OrderLineId> {
 	constructor(id: OrderLineId, private quantity: number, private price: Money) {
@@ -269,8 +269,8 @@ export class OrderLine extends Entity<OrderLineId> {
 A functional approach to error handling without throwing exceptions.
 
 ```typescript
-import { Result, ok, err, isOk, isErr } from '@ddd-ts/core';
-import type { DomainError } from '@ddd-ts/core';
+import { Result, ok, err, isOk, isErr } from '@tact-ddd/core';
+import type { DomainError } from '@tact-ddd/core';
 
 // Command handler with Result
 export class ChangeEmailHandler {
@@ -318,9 +318,9 @@ Here's a full example combining all concepts:
 
 ```typescript
 // domain/workspace/workspace.aggregate.ts
-import { AggregateRoot, ValueObject, Result, ok, err, ensure, DomainError } from '@ddd-ts/core';
-import type { WorkspaceId, UserId } from '@ddd-ts/ids';
-import type { DomainEvent } from '@ddd-ts/events';
+import { AggregateRoot, ValueObject, Result, ok, err, ensure, DomainError } from '@tact-ddd/core';
+import type { WorkspaceId, UserId } from '@tact-ddd/ids';
+import type { DomainEvent } from '@tact-ddd/events';
 
 // Value Object
 interface WorkspaceNameProps {
@@ -430,13 +430,13 @@ export class CreateWorkspaceHandler {
 
 ## Integration with Other Packages
 
-### With `@ddd-ts/ids`
+### With `@tact-ddd/ids`
 
 Use branded ID types as the `TId` parameter:
 
 ```typescript
-import { Entity } from '@ddd-ts/core';
-import { createId, type BrandedId } from '@ddd-ts/ids';
+import { Entity } from '@tact-ddd/core';
+import { createId, type BrandedId } from '@tact-ddd/ids';
 
 type ProductId = BrandedId<'prd'>;
 
@@ -450,13 +450,13 @@ const productId = createId<ProductId>('prd');
 const product = new Product(productId, 'Widget');
 ```
 
-### With `@ddd-ts/events`
+### With `@tact-ddd/events`
 
 Your domain events just need to match the `DomainEventLike` structure:
 
 ```typescript
-import { AggregateRoot } from '@ddd-ts/core';
-import { DomainEvent } from '@ddd-ts/events';
+import { AggregateRoot } from '@tact-ddd/core';
+import { DomainEvent } from '@tact-ddd/events';
 
 export class ProductCreated implements DomainEvent {
 	readonly name = 'ProductCreated'; // ✓ required

@@ -1,5 +1,5 @@
 {
-  "name": "@ddd-ts/ids",
+  "name": "@tact-ddd/ids",
   "module": "index.ts",
   "type": "module",
   "scripts": {

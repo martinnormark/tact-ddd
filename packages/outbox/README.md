@@ -1,8 +1,8 @@
-# @ddd-ts/outbox
+# @tact-ddd/outbox
 
 > **Transactional outbox pattern for reliable event publishing in Domain-Driven Design applications**
 
-A lightweight, ORM-agnostic implementation of the [Transactional Outbox pattern](https://microservices.io/patterns/data/transactional-outbox.html) that integrates seamlessly with `@ddd-ts/events` to ensure reliable delivery of integration events.
+A lightweight, ORM-agnostic implementation of the [Transactional Outbox pattern](https://microservices.io/patterns/data/transactional-outbox.html) that integrates seamlessly with `@tact-ddd/events` to ensure reliable delivery of integration events.
 
 ## 📦 What's in the box?
 
@@ -15,7 +15,7 @@ This package provides the core abstractions and processing logic for the outbox 
 
 ## 🎯 Design Philosophy
 
-`@ddd-ts/outbox` is intentionally minimal and stays focused on:
+`@tact-ddd/outbox` is intentionally minimal and stays focused on:
 
 ✅ **What it does:**
 
@@ -33,13 +33,13 @@ This package provides the core abstractions and processing logic for the outbox 
 ## 📥 Installation
 
 ```bash
-npm install @ddd-ts/outbox @ddd-ts/events
+npm install @tact-ddd/outbox @tact-ddd/events
 # or
-pnpm add @ddd-ts/outbox @ddd-ts/events
+pnpm add @tact-ddd/outbox @tact-ddd/events
 # or
-yarn add @ddd-ts/outbox @ddd-ts/events
+yarn add @tact-ddd/outbox @tact-ddd/events
 # or
-bun add @ddd-ts/outbox @ddd-ts/events
+bun add @tact-ddd/outbox @tact-ddd/events
 ```
 
 ## 🏗️ Architecture Overview
@@ -188,8 +188,8 @@ Create a serializer that knows your event types:
 
 ```typescript
 // app/infrastructure/outbox/json-serializer.ts
-import type { IntegrationEvent } from '@ddd-ts/events';
-import type { OutboxSerializer, OutboxSerializedEvent, OutboxMessage } from '@ddd-ts/outbox';
+import type { IntegrationEvent } from '@tact-ddd/events';
+import type { OutboxSerializer, OutboxSerializedEvent, OutboxMessage } from '@tact-ddd/outbox';
 import { WorkspaceCreatedIntegrationEvent } from '../events/workspace-created';
 import { UserRegisteredIntegrationEvent } from '../events/user-registered';
 
@@ -236,8 +236,8 @@ Create an ORM-specific implementation. Example with Prisma:
 ```typescript
 // app/infrastructure/outbox/prisma-outbox-store.ts
 import type { PrismaClient } from '@prisma/client';
-import type { IntegrationEvent } from '@ddd-ts/events';
-import type { OutboxStore, OutboxSerializer, OutboxMessage } from '@ddd-ts/outbox';
+import type { IntegrationEvent } from '@tact-ddd/events';
+import type { OutboxStore, OutboxSerializer, OutboxMessage } from '@tact-ddd/outbox';
 
 export class PrismaOutboxStore implements OutboxStore {
 	constructor(private readonly prisma: PrismaClient, public readonly serializer: OutboxSerializer) {}
@@ -351,7 +351,7 @@ Set up a background worker to process the outbox:
 ```typescript
 // app/infrastructure/workers/outbox-worker.ts
 import { PrismaClient } from '@prisma/client';
-import { OutboxProcessor } from '@ddd-ts/outbox';
+import { OutboxProcessor } from '@tact-ddd/outbox';
 import { PrismaOutboxStore } from '../outbox/prisma-outbox-store';
 import { JsonOutboxSerializer } from '../outbox/json-serializer';
 import { KafkaIntegrationEventBus } from '../event-bus/kafka-event-bus';
@@ -650,13 +650,13 @@ Worker for processing pending outbox messages.
 
 - `runOnce(): Promise<void>` - Process one batch of pending messages
 
-## 🤝 Integration with @ddd-ts/events
+## 🤝 Integration with @tact-ddd/events
 
-This package is designed to work seamlessly with `@ddd-ts/events`:
+This package is designed to work seamlessly with `@tact-ddd/events`:
 
 ```typescript
-import { IntegrationEvent, IntegrationEventBus } from '@ddd-ts/events';
-import { OutboxStore, OutboxProcessor } from '@ddd-ts/outbox';
+import { IntegrationEvent, IntegrationEventBus } from '@tact-ddd/events';
+import { OutboxStore, OutboxProcessor } from '@tact-ddd/outbox';
 
 // Your integration event
 class WorkspaceCreatedIntegrationEvent extends IntegrationEvent {
@@ -679,7 +679,7 @@ await processor.runOnce(); // Publishes via IntegrationEventBus
 
 ```typescript
 import { drizzle } from 'drizzle-orm/node-postgres';
-import type { OutboxStore } from '@ddd-ts/outbox';
+import type { OutboxStore } from '@tact-ddd/outbox';
 
 export class DrizzleOutboxStore implements OutboxStore {
 	constructor(private readonly db: ReturnType<typeof drizzle>, public readonly serializer: OutboxSerializer) {}

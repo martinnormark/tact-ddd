@@ -1,4 +1,4 @@
-import type { IntegrationEvent } from '@ddd-ts/events';
+import type { IntegrationEvent } from '@tact-ddd/events';
 import type { OutboxMessage } from './outbox-message';
 import type { OutboxSerializer } from './serializer';
 

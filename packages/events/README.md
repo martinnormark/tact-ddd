@@ -1,4 +1,4 @@
-# @ddd-ts/events
+# @tact-ddd/events
 
 Simple, type-safe event abstractions for Domain-Driven Design in TypeScript. This package provides a clean separation between **domain events** (within a bounded context) and **integration events** (across services), with minimal in-memory implementations for testing and simple applications.
 
@@ -7,7 +7,7 @@ Simple, type-safe event abstractions for Domain-Driven Design in TypeScript. Thi
 - **Type-safe event definitions** with full TypeScript support
 - **Domain events** for in-process communication within a bounded context
 - **Integration events** for cross-service communication
-- **Structural compatibility** with `@ddd-ts/core` aggregate roots
+- **Structural compatibility** with `@tact-ddd/core` aggregate roots
 - **In-memory dispatchers** for testing and simple applications
 - **Correlation & causation tracking** for distributed tracing
 - **Zero dependencies** on frameworks or ORMs
@@ -16,13 +16,13 @@ Simple, type-safe event abstractions for Domain-Driven Design in TypeScript. Thi
 ## Installation
 
 ```bash
-npm install @ddd-ts/events
+npm install @tact-ddd/events
 # or
-yarn add @ddd-ts/events
+yarn add @tact-ddd/events
 # or
-pnpm add @ddd-ts/events
+pnpm add @tact-ddd/events
 # or
-bun add @ddd-ts/events
+bun add @tact-ddd/events
 ```
 
 ## Core Concepts
@@ -43,7 +43,7 @@ Domain events represent something that happened within your bounded context. The
 **Key characteristics:**
 
 - Contain an `aggregateId` to identify which aggregate emitted the event
-- Structurally compatible with `DomainEventLike` from `@ddd-ts/core`
+- Structurally compatible with `DomainEventLike` from `@tact-ddd/core`
 - Should be handled within the same service/bounded context
 - Can trigger side effects, update read models, or spawn other aggregates
 
@@ -65,7 +65,7 @@ Integration events are meant to cross service boundaries. They communicate that 
 #### Using the Base Class (OOP Style)
 
 ```typescript
-import { DomainEventBase } from '@ddd-ts/events';
+import { DomainEventBase } from '@tact-ddd/events';
 import type { WorkspaceId } from '@your-app/ids';
 
 export class WorkspaceCreated extends DomainEventBase<WorkspaceId> {
@@ -81,7 +81,7 @@ const event = new WorkspaceCreated(workspaceId, 'user-123', 'pro');
 #### Using the Factory Function (Functional Style)
 
 ```typescript
-import { createDomainEvent } from '@ddd-ts/events';
+import { createDomainEvent } from '@tact-ddd/events';
 import type { WorkspaceId } from '@your-app/ids';
 
 const event = createDomainEvent(
@@ -104,7 +104,7 @@ const event = createDomainEvent(
 #### Using the Base Class
 
 ```typescript
-import { IntegrationEventBase } from '@ddd-ts/events';
+import { IntegrationEventBase } from '@tact-ddd/events';
 import type { WorkspaceId } from '@your-app/ids';
 
 export class WorkspaceCreatedIntegrationEvent extends IntegrationEventBase {
@@ -122,7 +122,7 @@ const integrationEvent = new WorkspaceCreatedIntegrationEvent(workspaceId, 'user
 #### Create a Handler
 
 ```typescript
-import { DomainEventHandler } from '@ddd-ts/events';
+import { DomainEventHandler } from '@tact-ddd/events';
 import { WorkspaceCreated } from './events';
 
 class SendWelcomeEmailHandler implements DomainEventHandler<WorkspaceCreated> {
@@ -143,7 +143,7 @@ class CreateDefaultProjectHandler implements DomainEventHandler<WorkspaceCreated
 #### Register Handlers and Dispatch Events
 
 ```typescript
-import { InMemoryDomainEventDispatcher } from '@ddd-ts/events';
+import { InMemoryDomainEventDispatcher } from '@tact-ddd/events';
 
 // Create dispatcher
 const dispatcher = new InMemoryDomainEventDispatcher();
@@ -161,10 +161,10 @@ await dispatcher.publishAll([event1, event2, event3]);
 
 ### Working with Aggregates
 
-Domain events integrate seamlessly with `@ddd-ts/core` aggregate roots:
+Domain events integrate seamlessly with `@tact-ddd/core` aggregate roots:
 
 ```typescript
-import { AggregateRoot } from '@ddd-ts/core';
+import { AggregateRoot } from '@tact-ddd/core';
 import { WorkspaceCreated, WorkspaceRenamed } from './events';
 import type { WorkspaceId } from '@your-app/ids';
 
@@ -208,7 +208,7 @@ workspace.clearDomainEvents();
 For integration events, use the `IntegrationEventBus` abstraction:
 
 ```typescript
-import { InMemoryIntegrationEventBus } from '@ddd-ts/events';
+import { InMemoryIntegrationEventBus } from '@tact-ddd/events';
 
 // In-memory bus (useful for tests)
 const bus = new InMemoryIntegrationEventBus();
@@ -219,10 +219,10 @@ await bus.publish(integrationEvent);
 console.log(bus.published); // Array of published events
 ```
 
-For production, you'd implement `IntegrationEventBus` with your actual transport (Kafka, RabbitMQ, SQS) or use `@ddd-ts/outbox` for reliable publishing:
+For production, you'd implement `IntegrationEventBus` with your actual transport (Kafka, RabbitMQ, SQS) or use `@tact-ddd/outbox` for reliable publishing:
 
 ```typescript
-import type { IntegrationEventBus, IntegrationEvent } from '@ddd-ts/events';
+import type { IntegrationEventBus, IntegrationEvent } from '@tact-ddd/events';
 
 class KafkaIntegrationEventBus implements IntegrationEventBus {
 	constructor(private kafka: KafkaClient) {}
@@ -245,7 +245,7 @@ class KafkaIntegrationEventBus implements IntegrationEventBus {
 Here's how everything fits together in an application service:
 
 ```typescript
-import { InMemoryDomainEventDispatcher } from '@ddd-ts/events';
+import { InMemoryDomainEventDispatcher } from '@tact-ddd/events';
 import { Workspace } from './domain/workspace';
 import { WorkspaceRepository } from './infrastructure/repository';
 import { WorkspaceCreatedIntegrationEvent } from './integration-events';
@@ -284,7 +284,7 @@ The in-memory implementations make testing straightforward:
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'bun:test';
-import { InMemoryDomainEventDispatcher, InMemoryIntegrationEventBus } from '@ddd-ts/events';
+import { InMemoryDomainEventDispatcher, InMemoryIntegrationEventBus } from '@tact-ddd/events';
 
 describe('Workspace creation', () => {
 	let domainDispatcher: InMemoryDomainEventDispatcher;
@@ -452,15 +452,15 @@ interface IntegrationEventBus {
 }
 ```
 
-## Integration with Other @ddd-ts Packages
+## Integration with Other @tact-ddd Packages
 
-### With `@ddd-ts/core`
+### With `@tact-ddd/core`
 
 The `DomainEvent` interface is structurally compatible with the `DomainEventLike` constraint in `AggregateRoot`:
 
 ```typescript
-import { AggregateRoot } from '@ddd-ts/core';
-import { DomainEvent } from '@ddd-ts/events';
+import { AggregateRoot } from '@tact-ddd/core';
+import { DomainEvent } from '@tact-ddd/events';
 
 // Works seamlessly - DomainEvent satisfies the AggregateRoot constraint
 class MyAggregate extends AggregateRoot<MyId, DomainEvent<MyId>> {
@@ -468,13 +468,13 @@ class MyAggregate extends AggregateRoot<MyId, DomainEvent<MyId>> {
 }
 ```
 
-### With `@ddd-ts/outbox`
+### With `@tact-ddd/outbox`
 
-Use `@ddd-ts/outbox` to reliably publish integration events with transactional guarantees:
+Use `@tact-ddd/outbox` to reliably publish integration events with transactional guarantees:
 
 ```typescript
-import { OutboxRepository } from '@ddd-ts/outbox';
-import { IntegrationEvent } from '@ddd-ts/events';
+import { OutboxRepository } from '@tact-ddd/outbox';
+import { IntegrationEvent } from '@tact-ddd/events';
 
 // In your application service, after persisting the aggregate:
 const integrationEvents: IntegrationEvent[] = mapDomainEventsToIntegrationEvents(domainEvents);
@@ -485,13 +485,13 @@ await outboxRepository.save(integrationEvents);
 // Separate process polls the outbox and publishes to your actual bus
 ```
 
-### With `@ddd-ts/ids`
+### With `@tact-ddd/ids`
 
 Use branded ID types for type-safe aggregate identifiers:
 
 ```typescript
-import { createId } from '@ddd-ts/ids';
-import { DomainEventBase } from '@ddd-ts/events';
+import { createId } from '@tact-ddd/ids';
+import { DomainEventBase } from '@tact-ddd/events';
 
 type WorkspaceId = string & { readonly brand: 'WorkspaceId' };
 
@@ -544,10 +544,10 @@ MIT
 
 ## Contributing
 
-Contributions are welcome! This package is part of the `@ddd-ts` monorepo.
+Contributions are welcome! This package is part of the `@tact-ddd` monorepo.
 
 ## Related Packages
 
-- [`@ddd-ts/core`](../core) - Core DDD building blocks (Entity, ValueObject, AggregateRoot)
-- [`@ddd-ts/ids`](../ids) - Type-safe ID generation with branded types
-- [`@ddd-ts/outbox`](../outbox) - Transactional outbox pattern implementation
+- [`@tact-ddd/core`](../core) - Core DDD building blocks (Entity, ValueObject, AggregateRoot)
+- [`@tact-ddd/ids`](../ids) - Type-safe ID generation with branded types
+- [`@tact-ddd/outbox`](../outbox) - Transactional outbox pattern implementation

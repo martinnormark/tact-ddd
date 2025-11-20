@@ -1,5 +1,5 @@
 {
-  "name": "ddd-ts",
+  "name": "tact-ddd",
   "private": true,
   "workspaces": [
     "packages/*"

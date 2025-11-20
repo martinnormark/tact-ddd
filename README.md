@@ -1,4 +1,4 @@
-# ddd-ts
+# tact-ddd
 
 To install dependencies:
 

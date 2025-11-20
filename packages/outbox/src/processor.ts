@@ -1,6 +1,6 @@
 import type { OutboxStore } from './store';
 import type { OutboxMessage } from './outbox-message';
-import type { IntegrationEventBus } from '@ddd-ts/events';
+import type { IntegrationEventBus } from '@tact-ddd/events';
 
 export interface OutboxProcessorOptions {
 	/**

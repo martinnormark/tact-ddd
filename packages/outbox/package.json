@@ -1,5 +1,5 @@
 {
-  "name": "@ddd-ts/outbox",
+  "name": "@tact-ddd/outbox",
   "module": "index.ts",
   "type": "module",
   "scripts": {
@@ -7,7 +7,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@ddd-ts/events": "workspace:*"
+    "@tact-ddd/events": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "latest",
