@@ -1,9 +1,14 @@
 {
-  "name": "ids",
+  "name": "@ddd-ts/ids",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc --noEmit"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "tsdown": "^0.16.6"
   },
   "peerDependencies": {
     "typescript": "^5"
