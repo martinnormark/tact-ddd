@@ -47,8 +47,10 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           bun version $VERSION --no-git-tag-version
 
+      - name: Setup NPM authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
       - name: Publish to NPM
         working-directory: ./packages/${{ matrix.package }}
         run: bun publish --access public
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
