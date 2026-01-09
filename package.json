@@ -2,6 +2,7 @@
   "name": "tact-ddd",
   "private": true,
   "workspaces": [
+    "apps/*",
     "packages/*"
   ],
   "scripts": {
