@@ -1,0 +1,62 @@
+---
+title: Integration Events
+description: "IntegrationEvent interface and IntegrationEventBase class"
+---
+
+```ts
+import { type IntegrationEvent, IntegrationEventBase } from '@tact-ddd/events';
+```
+
+## `IntegrationEvent`
+
+Interface for cross-service events. Extends `BaseEvent` with an optional `source` field identifying the originating service.
+
+```ts
+interface IntegrationEvent extends BaseEvent {
+	readonly source?: string;
+}
+```
+
+## `IntegrationEventBase`
+
+Abstract class implementing `IntegrationEvent`. Sets `occurredAt` to the current time automatically.
+
+### Constructor
+
+```ts
+protected constructor(
+	name: string,
+	source?: string,
+	correlationId?: string,
+	causationId?: string,
+)
+```
+
+### Example
+
+```ts
+class OrderShippedEvent extends IntegrationEventBase {
+	constructor(
+		public readonly orderId: string,
+		public readonly trackingNumber: string,
+	) {
+		super('OrderShipped', 'order-service');
+	}
+}
+
+const event = new OrderShippedEvent('ord_abc123', 'TRACK-456');
+event.name;       // 'OrderShipped'
+event.source;     // 'order-service'
+event.occurredAt; // Date
+```
+
+## Domain events vs integration events
+
+| Aspect | Domain Event | Integration Event |
+| --- | --- | --- |
+| Scope | Within a bounded context | Across service boundaries |
+| Identity | Tied to an `aggregateId` | Has a `source` service |
+| Audience | Internal handlers | External subscribers |
+| Coupling | Shares domain types | Shares only serializable data |
+
+See [Domain vs Integration Events](/docs/concepts/domain-vs-integration-events) for a deeper discussion.

@@ -1,0 +1,99 @@
+---
+title: Dispatchers
+description: "Event dispatcher and bus interfaces with in-memory implementations"
+---
+
+```ts
+import {
+	type DomainEventHandler,
+	type DomainEventDispatcher,
+	InMemoryDomainEventDispatcher,
+	type IntegrationEventHandler,
+	type IntegrationEventBus,
+	InMemoryIntegrationEventBus,
+} from '@tact-ddd/events';
+```
+
+## Domain event dispatching
+
+### `DomainEventHandler<TEvent>`
+
+Handler contract for domain events.
+
+```ts
+interface DomainEventHandler<TEvent = DomainEvent> {
+	handle(event: TEvent): Promise<void> | void;
+}
+```
+
+### `DomainEventDispatcher`
+
+Dispatcher contract for publishing domain events.
+
+```ts
+interface DomainEventDispatcher {
+	publish(event: DomainEvent): Promise<void>;
+	publishAll(events: readonly DomainEvent[]): Promise<void>;
+}
+```
+
+### `InMemoryDomainEventDispatcher`
+
+In-memory implementation with name-based routing. Handlers registered for an event name run in parallel via `Promise.all`.
+
+#### Methods
+
+| Method | Description |
+| --- | --- |
+| `register(eventName: string, handler: DomainEventHandler): void` | Register a handler for an event name |
+| `publish(event: DomainEvent): Promise<void>` | Dispatch a single event to its handlers |
+| `publishAll(events: readonly DomainEvent[]): Promise<void>` | Dispatch multiple events sequentially |
+
+```ts
+const dispatcher = new InMemoryDomainEventDispatcher();
+dispatcher.register('OrderPlaced', myHandler);
+dispatcher.register('OrderPlaced', anotherHandler);
+
+await dispatcher.publish(event);
+// Both handlers run in parallel
+```
+
+## Integration event bus
+
+### `IntegrationEventHandler<TEvent>`
+
+Handler contract for integration events.
+
+```ts
+interface IntegrationEventHandler<TEvent = IntegrationEvent> {
+	handle(event: TEvent): Promise<void> | void;
+}
+```
+
+### `IntegrationEventBus`
+
+Event bus contract for publishing integration events.
+
+```ts
+interface IntegrationEventBus {
+	publish(event: IntegrationEvent): Promise<void>;
+	publishAll(events: readonly IntegrationEvent[]): Promise<void>;
+}
+```
+
+### `InMemoryIntegrationEventBus`
+
+In-memory implementation that collects published events into a public `published` array. Useful for testing.
+
+#### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `published` | `IntegrationEvent[]` | Array of all published events |
+
+```ts
+const bus = new InMemoryIntegrationEventBus();
+await bus.publish(event);
+
+console.log(bus.published); // [event]
+```

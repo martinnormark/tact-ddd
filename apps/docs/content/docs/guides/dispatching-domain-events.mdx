@@ -1,0 +1,67 @@
+---
+title: Dispatching Domain Events
+description: How to wire up InMemoryDomainEventDispatcher with handlers
+---
+
+Domain events signal that something meaningful happened in your domain. The dispatcher routes events to registered handlers by event name.
+
+## Register handlers
+
+```ts
+import {
+	InMemoryDomainEventDispatcher,
+	type DomainEventHandler,
+	type DomainEvent,
+} from '@tact-ddd/events';
+
+class LogHandler implements DomainEventHandler {
+	async handle(event: DomainEvent): Promise<void> {
+		console.log(`Event: ${event.name} at ${event.occurredAt}`);
+	}
+}
+
+const dispatcher = new InMemoryDomainEventDispatcher();
+dispatcher.register('OrderPlaced', new LogHandler());
+```
+
+## Dispatch events from an aggregate
+
+```ts
+const order = new Order(OrderId.create());
+order.addLineItem(item);
+order.place();
+
+// Pull clears the internal buffer and returns the events
+const events = order.pullDomainEvents();
+
+// Publish all events through the dispatcher
+await dispatcher.publishAll(events);
+```
+
+## Register multiple handlers for the same event
+
+```ts
+dispatcher.register('OrderPlaced', new SendConfirmationEmailHandler());
+dispatcher.register('OrderPlaced', new UpdateInventoryHandler());
+dispatcher.register('OrderPlaced', new NotifyWarehouseHandler());
+
+// All three handlers run in parallel when 'OrderPlaced' is dispatched
+```
+
+## Publish a single event
+
+```ts
+import { createDomainEvent } from '@tact-ddd/events';
+
+const event = createDomainEvent('OrderCancelled', orderId, {
+	reason: 'Customer request',
+});
+
+await dispatcher.publish(event);
+```
+
+## See also
+
+- [Dispatchers reference](/docs/reference/events/dispatchers) -- full API details
+- [Publishing Integration Events](/docs/guides/publishing-integration-events) -- for cross-service events
+- [Domain Events Workflow tutorial](/docs/tutorials/domain-events-workflow) -- end-to-end walkthrough

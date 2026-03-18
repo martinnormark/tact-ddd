@@ -1,0 +1,22 @@
+---
+title: "@tact-ddd/ids"
+description: Branded ID types with prefix and nanoid generation
+---
+
+The ids package provides type-safe, branded ID types with human-readable prefixes. IDs are generated using nanoid with a friendly alphabet that avoids ambiguous characters.
+
+```sh
+bun add @tact-ddd/ids
+```
+
+## Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| [`defineIdType`](/docs/reference/ids/define-id-type) | Factory function | Define a new branded ID type with a prefix |
+| [`Brand`](/docs/reference/ids/define-id-type) | Type alias | Generic branded type utility |
+| [`IdConfig`](/docs/reference/ids/define-id-type) | Interface | Configuration for `defineIdType` |
+
+## Dependencies
+
+- `nanoid` ^5.1.6 (runtime)

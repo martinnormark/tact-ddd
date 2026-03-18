@@ -1,0 +1,83 @@
+---
+title: Errors
+description: "DomainError, InvariantViolation, and NotFoundError class hierarchy"
+---
+
+```ts
+import { DomainError, InvariantViolation, NotFoundError } from '@tact-ddd/core';
+```
+
+## Error hierarchy
+
+```
+Error
+└── DomainError
+    ├── InvariantViolation
+    └── NotFoundError
+```
+
+## `DomainError`
+
+Base class for all domain errors. Extends `Error` with a `code` property for programmatic handling.
+
+### Constructor
+
+```ts
+new DomainError(code: string, message?: string)
+```
+
+### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `code` | `string` (readonly) | Machine-readable error code |
+| `message` | `string` | Human-readable description |
+
+```ts
+const error = new DomainError('INSUFFICIENT_FUNDS', 'Not enough balance');
+error.code;    // 'INSUFFICIENT_FUNDS'
+error.message; // 'Not enough balance'
+```
+
+## `InvariantViolation`
+
+Thrown when a domain invariant is violated. This is the error type thrown by `ensure()`.
+
+### Constructor
+
+```ts
+new InvariantViolation(code: string, message?: string)
+```
+
+Extends `DomainError` with no additional properties.
+
+```ts
+throw new InvariantViolation('INVALID_STATE', 'Order already shipped');
+```
+
+## `NotFoundError`
+
+Thrown when an entity cannot be found. Auto-generates a code from the entity name.
+
+### Constructor
+
+```ts
+new NotFoundError(entityName: string, id: string)
+```
+
+### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `code` | `string` (readonly) | Auto-generated as `"<entityName>.NotFound"` |
+| `message` | `string` | Auto-generated as `"<entityName> with id <id> not found"` |
+
+```ts
+const error = new NotFoundError('User', 'usr_abc123');
+error.code;    // 'User.NotFound'
+error.message; // 'User with id usr_abc123 not found'
+```
+
+## Prototype fix
+
+All error classes use `Object.setPrototypeOf(this, new.target.prototype)` to ensure `instanceof` works correctly with TypeScript class inheritance.

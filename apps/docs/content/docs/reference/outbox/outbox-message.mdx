@@ -1,0 +1,52 @@
+---
+title: OutboxMessage
+description: "OutboxMessage interface and OutboxMessageStatus type"
+---
+
+```ts
+import type { OutboxMessage, OutboxMessageStatus } from '@tact-ddd/outbox';
+```
+
+## `OutboxMessageStatus`
+
+Union type representing the possible states of an outbox message.
+
+```ts
+type OutboxMessageStatus = 'pending' | 'processing' | 'failed' | 'processed';
+```
+
+## `OutboxMessage`
+
+Interface representing a single record in the outbox.
+
+```ts
+interface OutboxMessage {
+	readonly id: string;
+	readonly eventName: string;
+	readonly eventType: string;
+	readonly payload: unknown;
+	readonly occurredAt: Date;
+	readonly createdAt: Date;
+	readonly status: OutboxMessageStatus;
+	readonly retryCount: number;
+	readonly lastError?: string;
+	readonly correlationId?: string;
+	readonly causationId?: string;
+}
+```
+
+### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique message identifier |
+| `eventName` | `string` | The name of the event (e.g., `'OrderPlaced'`) |
+| `eventType` | `string` | The type/class name of the event |
+| `payload` | `unknown` | Serialized event data |
+| `occurredAt` | `Date` | When the original event occurred |
+| `createdAt` | `Date` | When the outbox message was created |
+| `status` | `OutboxMessageStatus` | Current processing status |
+| `retryCount` | `number` | Number of processing attempts |
+| `lastError` | `string` (optional) | Error message from the last failed attempt |
+| `correlationId` | `string` (optional) | Correlation ID for tracing |
+| `causationId` | `string` (optional) | Causation ID for tracing |

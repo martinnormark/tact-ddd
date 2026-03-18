@@ -1,0 +1,72 @@
+---
+title: Ports & Adapters
+description: The architectural pattern behind the outbox package design
+---
+
+## The pattern
+
+Ports & Adapters (also known as Hexagonal Architecture) separates an application into:
+
+- **Ports** -- interfaces that define what the application needs from the outside world
+- **Adapters** -- concrete implementations of those interfaces for specific technologies
+
+The application core depends only on ports (interfaces). Adapters are plugged in at the edges.
+
+## How the outbox package uses it
+
+The `@tact-ddd/outbox` package is a concrete example of ports & adapters:
+
+```
+┌─────────────────────────────────────────────┐
+│              OutboxProcessor                 │
+│               (application)                  │
+│                                              │
+│    ┌──────────────┐   ┌──────────────────┐  │
+│    │ OutboxStore   │   │ IntegrationEvent │  │
+│    │   (port)      │   │   Bus (port)     │  │
+│    └──────┬───────┘   └────────┬─────────┘  │
+└───────────┼────────────────────┼─────────────┘
+            │                    │
+     ┌──────┴───────┐   ┌───────┴──────────┐
+     │ PostgresOut-  │   │ RabbitMQ         │
+     │ boxStore      │   │ EventBus         │
+     │  (adapter)    │   │  (adapter)       │
+     └──────────────┘   └──────────────────┘
+```
+
+### Ports (defined by the package)
+
+| Port | Purpose |
+| --- | --- |
+| `OutboxStore` | How messages are stored and retrieved |
+| `OutboxSerializer` | How events are serialized/deserialized |
+| `IntegrationEventBus` | How events are published (from `@tact-ddd/events`) |
+
+### Adapters (provided by you)
+
+You implement these ports for your specific infrastructure:
+
+- `PostgresOutboxStore` for a PostgreSQL database
+- `MongoOutboxStore` for MongoDB
+- `RabbitMQEventBus` for RabbitMQ
+- `KafkaEventBus` for Kafka
+
+### Application logic (provided by the package)
+
+`OutboxProcessor` contains the processing logic and depends only on the port interfaces. It does not know or care which database or message broker you use.
+
+## Why this matters
+
+1. **Testability** -- swap in in-memory implementations for unit tests (tact-ddd provides `InMemoryIntegrationEventBus` for this)
+2. **Flexibility** -- change your database or message broker without changing the processing logic
+3. **Separation of concerns** -- infrastructure details stay at the edges; domain logic stays pure
+4. **Evolvability** -- start with a simple adapter, upgrade to a more sophisticated one later
+
+## The broader principle
+
+While the outbox package is the most explicit example, the same principle applies throughout tact-ddd:
+
+- `DomainEventDispatcher` and `DomainEventHandler` are ports -- `InMemoryDomainEventDispatcher` is an adapter
+- `IntegrationEventBus` and `IntegrationEventHandler` are ports -- `InMemoryIntegrationEventBus` is an adapter
+
+You consume the interfaces in your domain and application layers, and provide concrete implementations in your infrastructure layer.

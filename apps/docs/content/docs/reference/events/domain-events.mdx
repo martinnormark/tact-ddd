@@ -1,0 +1,104 @@
+---
+title: Domain Events
+description: "DomainEvent interface, DomainEventBase class, and createDomainEvent factory"
+---
+
+```ts
+import {
+	type BaseEvent,
+	type DomainEvent,
+	DomainEventBase,
+	createDomainEvent,
+} from '@tact-ddd/events';
+```
+
+## `BaseEvent`
+
+Common interface shared by all event types.
+
+```ts
+interface BaseEvent {
+	readonly name: string;
+	readonly occurredAt: Date;
+	readonly correlationId?: string;
+	readonly causationId?: string;
+}
+```
+
+## `DomainEvent<TId>`
+
+Interface for events scoped to a specific aggregate.
+
+```ts
+interface DomainEvent<TId = string> extends BaseEvent {
+	readonly aggregateId: TId;
+}
+```
+
+### Type parameters
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `TId` | `string` | The aggregate ID type |
+
+## `DomainEventBase<TId>`
+
+Abstract class implementing `DomainEvent<TId>`. Sets `occurredAt` to the current time automatically.
+
+### Constructor
+
+```ts
+protected constructor(
+	name: string,
+	aggregateId: TId,
+	correlationId?: string,
+	causationId?: string,
+)
+```
+
+### Example
+
+```ts
+class OrderPlaced extends DomainEventBase<OrderId> {
+	constructor(
+		aggregateId: OrderId,
+		public readonly itemCount: number,
+	) {
+		super('OrderPlaced', aggregateId);
+	}
+}
+```
+
+## `createDomainEvent<TName, TId, TPayload>(name, aggregateId, payload, meta?)`
+
+Factory function that creates a plain-object domain event by spreading the payload into the event. Returns `DomainEvent<TId> & TPayload`.
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `name` | `TName extends string` | The event name |
+| `aggregateId` | `TId` | The aggregate ID |
+| `payload` | `TPayload` | Additional data to spread into the event |
+| `meta` | `{ occurredAt?, correlationId?, causationId? }` | Optional metadata overrides |
+
+### Example
+
+```ts
+const event = createDomainEvent('OrderPlaced', orderId, {
+	itemCount: 3,
+	total: 99.99,
+});
+// { name: 'OrderPlaced', aggregateId: 'ord_...', occurredAt: Date, itemCount: 3, total: 99.99 }
+```
+
+With metadata:
+
+```ts
+const event = createDomainEvent(
+	'OrderPlaced',
+	orderId,
+	{ itemCount: 3 },
+	{ correlationId: 'req-123', causationId: 'cmd-456' },
+);
+```

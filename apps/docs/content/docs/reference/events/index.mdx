@@ -1,0 +1,27 @@
+---
+title: "@tact-ddd/events"
+description: Domain events, integration events, and dispatchers
+---
+
+The events package provides event types and dispatching infrastructure for domain-driven design. It has zero runtime dependencies.
+
+```sh
+bun add @tact-ddd/events
+```
+
+## Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| [`BaseEvent`](/docs/reference/events/domain-events) | Interface | Common event shape with name, occurredAt, and tracing IDs |
+| [`DomainEvent`](/docs/reference/events/domain-events) | Interface | Event scoped to an aggregate |
+| [`DomainEventBase`](/docs/reference/events/domain-events) | Abstract class | Base implementation of DomainEvent |
+| [`createDomainEvent`](/docs/reference/events/domain-events) | Factory function | Create plain-object domain events |
+| [`IntegrationEvent`](/docs/reference/events/integration-events) | Interface | Cross-service event with source field |
+| [`IntegrationEventBase`](/docs/reference/events/integration-events) | Abstract class | Base implementation of IntegrationEvent |
+| [`DomainEventHandler`](/docs/reference/events/dispatchers) | Interface | Handler contract for domain events |
+| [`DomainEventDispatcher`](/docs/reference/events/dispatchers) | Interface | Dispatcher contract |
+| [`InMemoryDomainEventDispatcher`](/docs/reference/events/dispatchers) | Class | In-memory dispatcher with name-based routing |
+| [`IntegrationEventHandler`](/docs/reference/events/dispatchers) | Interface | Handler contract for integration events |
+| [`IntegrationEventBus`](/docs/reference/events/dispatchers) | Interface | Event bus contract |
+| [`InMemoryIntegrationEventBus`](/docs/reference/events/dispatchers) | Class | In-memory bus for testing |

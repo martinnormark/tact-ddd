@@ -1,0 +1,12 @@
+{
+	"title": "@tact-ddd/core",
+	"pages": [
+		"index",
+		"entity",
+		"aggregate-root",
+		"value-object",
+		"result",
+		"errors",
+		"guard"
+	]
+}

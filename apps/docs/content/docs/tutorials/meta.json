@@ -1,0 +1,10 @@
+{
+	"title": "Tutorials",
+	"icon": "GraduationCap",
+	"pages": [
+		"index",
+		"modeling-an-aggregate",
+		"domain-events-workflow",
+		"transactional-outbox"
+	]
+}

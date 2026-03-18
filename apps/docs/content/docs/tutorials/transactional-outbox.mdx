@@ -1,0 +1,151 @@
+---
+title: Transactional Outbox
+description: Implement the full outbox pipeline from event emission to reliable publishing
+---
+
+In this tutorial you will implement the transactional outbox pattern end-to-end, ensuring domain events are reliably converted to integration events and published even if the process crashes between steps.
+
+## What you will learn
+
+- Implement the `OutboxStore` and `OutboxSerializer` ports
+- Store integration events in an outbox during a transaction
+- Process pending outbox messages with `OutboxProcessor`
+- Handle failures and retries
+
+## What you will build
+
+A complete outbox pipeline:
+
+1. An aggregate emits domain events
+2. Domain events are mapped to integration events and stored in an outbox
+3. `OutboxProcessor` picks up pending messages, deserializes them, and publishes via an `IntegrationEventBus`
+4. Failed messages are retried up to a configurable limit
+
+## Prerequisites
+
+```sh
+bun add @tact-ddd/core @tact-ddd/events @tact-ddd/outbox @tact-ddd/ids
+```
+
+## Steps
+
+### 1. Define an integration event
+
+```ts
+import { IntegrationEventBase } from '@tact-ddd/events';
+
+class UserRegisteredIntegrationEvent extends IntegrationEventBase {
+	constructor(
+		public readonly userId: string,
+		public readonly email: string,
+	) {
+		super('UserRegistered', 'user-service');
+	}
+}
+```
+
+### 2. Implement the OutboxSerializer
+
+```ts
+import type { OutboxSerializer, OutboxSerializedEvent, OutboxMessage } from '@tact-ddd/outbox';
+import type { IntegrationEvent } from '@tact-ddd/events';
+
+class JsonOutboxSerializer implements OutboxSerializer {
+	serialize(event: IntegrationEvent): OutboxSerializedEvent {
+		return {
+			eventName: event.name,
+			eventType: event.constructor.name,
+			payload: { ...event },
+			occurredAt: event.occurredAt,
+			correlationId: event.correlationId,
+			causationId: event.causationId,
+		};
+	}
+
+	deserialize(message: OutboxMessage): IntegrationEvent {
+		const payload = message.payload as Record<string, unknown>;
+		return new UserRegisteredIntegrationEvent(
+			payload['userId'] as string,
+			payload['email'] as string,
+		);
+	}
+}
+```
+
+### 3. Implement an in-memory OutboxStore
+
+```ts
+import type { OutboxStore, OutboxMessage, OutboxMessageStatus } from '@tact-ddd/outbox';
+
+class InMemoryOutboxStore implements OutboxStore {
+	readonly serializer = new JsonOutboxSerializer();
+	private messages: OutboxMessage[] = [];
+	private nextId = 1;
+
+	async add(event: IntegrationEvent): Promise<void> {
+		const serialized = this.serializer.serialize(event);
+		this.messages.push({
+			id: String(this.nextId++),
+			...serialized,
+			createdAt: new Date(),
+			status: 'pending',
+			retryCount: 0,
+		});
+	}
+
+	async getPending(batchSize: number): Promise<readonly OutboxMessage[]> {
+		return this.messages
+			.filter((m) => m.status === 'pending')
+			.slice(0, batchSize);
+	}
+
+	async markProcessed(id: string): Promise<void> {
+		const msg = this.messages.find((m) => m.id === id);
+		if (msg) (msg as { status: OutboxMessageStatus }).status = 'processed';
+	}
+
+	async markFailed(id: string, error: Error): Promise<void> {
+		const msg = this.messages.find((m) => m.id === id);
+		if (msg) {
+			(msg as { status: OutboxMessageStatus }).status = 'failed';
+			(msg as { lastError: string }).lastError = error.message;
+		}
+	}
+}
+```
+
+### 4. Wire up the processor
+
+```ts
+import { OutboxProcessor } from '@tact-ddd/outbox';
+import { InMemoryIntegrationEventBus } from '@tact-ddd/events';
+
+const store = new InMemoryOutboxStore();
+const bus = new InMemoryIntegrationEventBus();
+const processor = new OutboxProcessor(store, bus, {
+	batchSize: 50,
+	maxRetries: 5,
+});
+
+// Store an event (normally done inside your use case / transaction)
+await store.add(
+	new UserRegisteredIntegrationEvent('usr_abc123', 'alice@example.com'),
+);
+
+// Process pending messages
+await processor.runOnce();
+
+console.log(bus.published);
+// [UserRegisteredIntegrationEvent { name: 'UserRegistered', ... }]
+```
+
+## What's next
+
+<Cards>
+  <Card title="Implementing an Outbox Store" href="/docs/guides/implementing-outbox-store">
+    How to implement OutboxStore for a real database
+  </Card>
+  <Card title="Ports & Adapters" href="/docs/concepts/ports-and-adapters">
+    Understand the architectural pattern behind the outbox design
+  </Card>
+</Cards>

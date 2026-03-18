@@ -1,0 +1,82 @@
+---
+title: OutboxProcessor
+description: "OutboxProcessor class and OutboxProcessorOptions configuration"
+---
+
+```ts
+import { OutboxProcessor, type OutboxProcessorOptions } from '@tact-ddd/outbox';
+```
+
+## `OutboxProcessorOptions`
+
+Configuration for the outbox processor.
+
+```ts
+interface OutboxProcessorOptions {
+	readonly batchSize?: number;
+	readonly maxRetries?: number;
+}
+```
+
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `batchSize` | `number` | `100` | Maximum number of messages to process per `runOnce()` call |
+| `maxRetries` | `number` | `10` | Maximum retry attempts before a message is permanently failed |
+
+## `OutboxProcessor`
+
+Concrete processor that fetches pending outbox messages, deserializes them back to integration events, and publishes them via an `IntegrationEventBus`.
+
+### Constructor
+
+```ts
+new OutboxProcessor(
+	store: OutboxStore,
+	bus: IntegrationEventBus,
+	options?: OutboxProcessorOptions,
+)
+```
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `store` | `OutboxStore` | The store to fetch pending messages from |
+| `bus` | `IntegrationEventBus` | The bus to publish deserialized events to |
+| `options` | `OutboxProcessorOptions` | Optional configuration |
+
+### Methods
+
+#### `runOnce(): Promise<void>`
+
+Process one batch of pending messages:
+
+1. Fetch up to `batchSize` pending messages from the store
+2. For each message, deserialize it using `store.serializer`
+3. Publish the deserialized event via the bus
+4. Mark the message as processed (or failed if an error occurs)
+
+Messages that exceed `maxRetries` are skipped.
+
+### Example
+
+```ts
+const processor = new OutboxProcessor(store, bus, {
+	batchSize: 50,
+	maxRetries: 5,
+});
+
+// Call periodically (e.g., via setInterval or a cron job)
+await processor.runOnce();
+```
+
+### Typical usage pattern
+
+```ts
+// Poll-based processing
+setInterval(async () => {
+	try {
+		await processor.runOnce();
+	} catch (error) {
+		console.error('Outbox processing failed:', error);
+	}
+}, 5000); // Every 5 seconds
+```

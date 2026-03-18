@@ -1,0 +1,78 @@
+---
+title: Result
+description: "Discriminated union type for representing success or failure"
+---
+
+```ts
+import { type Result, ok, err, isOk, isErr } from '@tact-ddd/core';
+```
+
+## `Result<T, E>`
+
+A discriminated union representing either a success (`ok`) or a failure (`err`).
+
+```ts
+type Result<T, E = DomainError> =
+	| { readonly ok: true; readonly value: T }
+	| { readonly ok: false; readonly error: E };
+```
+
+### Type parameters
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `T` | -- | The success value type |
+| `E` | `DomainError` | The error type |
+
+## `ok<T>(value: T): Result<T, never>`
+
+Create a success Result.
+
+```ts
+const result = ok(42);
+// { ok: true, value: 42 }
+```
+
+## `err<E>(error: E): Result<never, E>`
+
+Create a failure Result.
+
+```ts
+const result = err(new DomainError('INVALID', 'Invalid input'));
+// { ok: false, error: DomainError }
+```
+
+## `isOk<T, E>(result: Result<T, E>): result is { ok: true; value: T }`
+
+Type guard that narrows to the success case.
+
+```ts
+const result = divide(10, 2);
+if (isOk(result)) {
+	console.log(result.value); // TypeScript knows this is number
+}
+```
+
+## `isErr<T, E>(result: Result<T, E>): result is { ok: false; error: E }`
+
+Type guard that narrows to the failure case.
+
+```ts
+const result = divide(10, 0);
+if (isErr(result)) {
+	console.log(result.error.code); // TypeScript knows this is E
+}
+```
+
+## Pattern: direct narrowing
+
+You can also narrow without the helper functions:
+
+```ts
+const result = divide(10, 2);
+if (result.ok) {
+	console.log(result.value);
+} else {
+	console.log(result.error.code);
+}
+```

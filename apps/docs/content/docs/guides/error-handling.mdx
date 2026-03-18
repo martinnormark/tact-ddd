@@ -1,0 +1,81 @@
+---
+title: Error Handling
+description: How to use ensure(), DomainError, InvariantViolation, and NotFoundError
+---
+
+tact-ddd provides a structured error hierarchy for domain errors and an assertion function for invariant enforcement.
+
+## Error class hierarchy
+
+```
+Error
+└── DomainError             (code: string)
+    ├── InvariantViolation  (thrown by ensure())
+    └── NotFoundError       (auto-generates code like "User.NotFound")
+```
+
+## Throw domain errors
+
+```ts
+import { DomainError } from '@tact-ddd/core';
+
+throw new DomainError('INSUFFICIENT_FUNDS', 'Account balance too low');
+```
+
+All domain errors have a `code` property for programmatic handling:
+
+```ts
+try {
+	// ...
+} catch (error) {
+	if (error instanceof DomainError) {
+		switch (error.code) {
+			case 'INSUFFICIENT_FUNDS':
+				// handle specific case
+				break;
+		}
+	}
+}
+```
+
+## Enforce invariants with ensure()
+
+Use `ensure()` to assert conditions that must always be true. It throws `InvariantViolation` when the condition is false:
+
+```ts
+import { ensure } from '@tact-ddd/core';
+
+function withdraw(amount: number, balance: number): number {
+	ensure(amount > 0, 'INVALID_AMOUNT', 'Amount must be positive');
+	ensure(amount <= balance, 'INSUFFICIENT_FUNDS', 'Not enough balance');
+	return balance - amount;
+}
+```
+
+`ensure()` is an assertion function -- TypeScript narrows the type after the call:
+
+```ts
+function processUser(user: User | undefined): void {
+	ensure(user !== undefined, 'USER_REQUIRED');
+	// TypeScript knows user is User here
+	console.log(user.email);
+}
+```
+
+## Use NotFoundError
+
+`NotFoundError` auto-generates a descriptive error code from the entity name:
+
+```ts
+import { NotFoundError } from '@tact-ddd/core';
+
+throw new NotFoundError('User', 'usr_abc123');
+// code: "User.NotFound"
+// message: "User with id usr_abc123 not found"
+```
+
+## See also
+
+- [Errors reference](/docs/reference/core/errors) -- full API details
+- [Guard reference](/docs/reference/core/guard) -- `ensure()` API details
+- [Result vs Exceptions](/docs/concepts/result-vs-exceptions) -- when to use which strategy

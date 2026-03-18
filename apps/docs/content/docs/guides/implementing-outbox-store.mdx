@@ -1,0 +1,131 @@
+---
+title: Implementing an Outbox Store
+description: How to implement the OutboxStore port for your database
+---
+
+The `OutboxStore` interface is a port that you must implement for your specific database. This guide shows the contract and how to implement it.
+
+## The OutboxStore contract
+
+```ts
+interface OutboxStore {
+	readonly serializer: OutboxSerializer;
+	add(event: IntegrationEvent): Promise<void>;
+	getPending(batchSize: number): Promise<readonly OutboxMessage[]>;
+	markProcessed(id: string): Promise<void>;
+	markFailed(id: string, error: Error): Promise<void>;
+}
+```
+
+## Key implementation considerations
+
+1. **`add()` must run inside your business transaction** -- the outbox message should be stored atomically with your domain state changes
+2. **`getPending()` should order by `createdAt`** to process messages in order
+3. **`markProcessed()` and `markFailed()` should be idempotent** -- processing the same message twice should not cause errors
+4. **Consider row-level locking** in `getPending()` to support concurrent processors
+
+## Example: PostgreSQL implementation
+
+```ts
+import type {
+	OutboxStore,
+	OutboxSerializer,
+	OutboxMessage,
+} from '@tact-ddd/outbox';
+import type { IntegrationEvent } from '@tact-ddd/events';
+
+class PostgresOutboxStore implements OutboxStore {
+	constructor(
+		private readonly db: YourDatabaseClient,
+		readonly serializer: OutboxSerializer,
+	) {}
+
+	async add(event: IntegrationEvent): Promise<void> {
+		const serialized = this.serializer.serialize(event);
+		await this.db.query(
+			`INSERT INTO outbox_messages
+			 (event_name, event_type, payload, occurred_at, correlation_id, causation_id, status, retry_count)
+			 VALUES ($1, $2, $3, $4, $5, $6, 'pending', 0)`,
+			[
+				serialized.eventName,
+				serialized.eventType,
+				JSON.stringify(serialized.payload),
+				serialized.occurredAt,
+				serialized.correlationId,
+				serialized.causationId,
+			],
+		);
+	}
+
+	async getPending(batchSize: number): Promise<readonly OutboxMessage[]> {
+		const rows = await this.db.query(
+			`SELECT * FROM outbox_messages
+			 WHERE status = 'pending'
+			 ORDER BY created_at ASC
+			 LIMIT $1
+			 FOR UPDATE SKIP LOCKED`,
+			[batchSize],
+		);
+		return rows.map(this.mapRow);
+	}
+
+	async markProcessed(id: string): Promise<void> {
+		await this.db.query(
+			`UPDATE outbox_messages SET status = 'processed' WHERE id = $1`,
+			[id],
+		);
+	}
+
+	async markFailed(id: string, error: Error): Promise<void> {
+		await this.db.query(
+			`UPDATE outbox_messages
+			 SET status = 'failed', last_error = $2, retry_count = retry_count + 1
+			 WHERE id = $1`,
+			[id, error.message],
+		);
+	}
+
+	private mapRow(row: Record<string, unknown>): OutboxMessage {
+		return {
+			id: row['id'] as string,
+			eventName: row['event_name'] as string,
+			eventType: row['event_type'] as string,
+			payload: JSON.parse(row['payload'] as string),
+			occurredAt: row['occurred_at'] as Date,
+			createdAt: row['created_at'] as Date,
+			status: row['status'] as OutboxMessageStatus,
+			retryCount: row['retry_count'] as number,
+			lastError: row['last_error'] as string | undefined,
+			correlationId: row['correlation_id'] as string | undefined,
+			causationId: row['causation_id'] as string | undefined,
+		};
+	}
+}
+```
+
+## SQL schema
+
+```sql
+CREATE TABLE outbox_messages (
+    id            BIGSERIAL PRIMARY KEY,
+    event_name    TEXT NOT NULL,
+    event_type    TEXT NOT NULL,
+    payload       JSONB NOT NULL,
+    occurred_at   TIMESTAMPTZ NOT NULL,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    status        TEXT NOT NULL DEFAULT 'pending',
+    retry_count   INT NOT NULL DEFAULT 0,
+    last_error    TEXT,
+    correlation_id TEXT,
+    causation_id  TEXT
+);
+
+CREATE INDEX idx_outbox_pending ON outbox_messages (created_at)
+    WHERE status = 'pending';
+```
+
+## See also
+
+- [OutboxStore reference](/docs/reference/outbox/store) -- full interface details
+- [OutboxProcessor reference](/docs/reference/outbox/processor) -- how the processor consumes the store
+- [Ports & Adapters concept](/docs/concepts/ports-and-adapters) -- the architecture behind this pattern

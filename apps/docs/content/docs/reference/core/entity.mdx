@@ -1,0 +1,47 @@
+---
+title: Entity
+description: "Abstract base class for domain entities with identity-based equality"
+---
+
+```ts
+import { Entity } from '@tact-ddd/core';
+```
+
+## `Entity<TId>`
+
+Abstract base class for domain entities. An entity is identified by its `id` property -- two entities are equal if and only if they have the same ID.
+
+### Type parameters
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `TId` | -- | The type of the entity's identifier |
+
+### Constructor
+
+```ts
+protected constructor(public readonly id: TId)
+```
+
+Subclasses must call `super(id)` in their constructor.
+
+### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | `TId` (readonly) | The unique identifier for this entity |
+
+### Methods
+
+#### `equals(other: Entity<TId>): boolean`
+
+Returns `true` if the other entity has the same `id` as this one.
+
+```ts
+const a = new User(UserId.create(), 'Alice');
+const b = new User(UserId.create(), 'Alice');
+const c = new User(a.id, 'Bob');
+
+a.equals(b); // false (different IDs)
+a.equals(c); // true (same ID)
+```

@@ -1,0 +1,78 @@
+---
+title: Using the Result Type
+description: How to use Result, ok(), and err() for domain validation without throwing
+---
+
+The `Result` type represents the outcome of an operation that can succeed or fail. Use it for expected domain failures like validation errors and business rule violations.
+
+## Return a Result
+
+```ts
+import { type Result, ok, err, DomainError } from '@tact-ddd/core';
+
+function divide(a: number, b: number): Result<number> {
+	if (b === 0) {
+		return err(new DomainError('DIVISION_BY_ZERO', 'Cannot divide by zero'));
+	}
+	return ok(a / b);
+}
+```
+
+## Handle a Result
+
+Use type narrowing with `result.ok`:
+
+```ts
+const result = divide(10, 0);
+
+if (result.ok) {
+	console.log(result.value); // number
+} else {
+	console.log(result.error.code); // 'DIVISION_BY_ZERO'
+}
+```
+
+## Use type guard functions
+
+```ts
+import { isOk, isErr } from '@tact-ddd/core';
+
+const result = divide(10, 2);
+
+if (isOk(result)) {
+	console.log(result.value); // 5
+}
+
+if (isErr(result)) {
+	console.log(result.error.code);
+}
+```
+
+## Use a custom error type
+
+The second type parameter defaults to `DomainError` but can be any type:
+
+```ts
+type ValidationError = { readonly field: string; readonly message: string };
+
+function validateAge(age: number): Result<number, ValidationError> {
+	if (age < 0) {
+		return err({ field: 'age', message: 'Age cannot be negative' });
+	}
+	return ok(age);
+}
+```
+
+## When to use Result vs exceptions
+
+| Scenario | Use |
+| --- | --- |
+| Expected domain failures (validation, business rules) | `Result<T, E>` |
+| Programming errors, impossible states | `ensure()` / throw |
+
+See [Result vs Exceptions](/docs/concepts/result-vs-exceptions) for a deeper discussion.
+
+## See also
+
+- [Result reference](/docs/reference/core/result) -- full API details
+- [Error Handling guide](/docs/guides/error-handling) -- using `ensure()` and error classes

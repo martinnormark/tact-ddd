@@ -1,0 +1,81 @@
+---
+title: Creating Value Objects
+description: How to implement ValueObject with structural equality
+---
+
+Value objects are domain objects that are defined entirely by their attributes. Two value objects are equal if all their components are equal.
+
+## Create a value object
+
+Extend `ValueObject` and implement `getEqualityComponents()`:
+
+```ts
+import { ValueObject } from '@tact-ddd/core';
+
+class Address extends ValueObject {
+	constructor(
+		public readonly street: string,
+		public readonly city: string,
+		public readonly postalCode: string,
+	) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [this.street, this.city, this.postalCode];
+	}
+}
+```
+
+## Compare value objects
+
+Value objects use structural equality:
+
+```ts
+const a = new Address('123 Main St', 'Springfield', '62704');
+const b = new Address('123 Main St', 'Springfield', '62704');
+const c = new Address('456 Oak Ave', 'Springfield', '62704');
+
+a.equals(b); // true -- same components
+a.equals(c); // false -- different street
+```
+
+## Compose value objects
+
+Value objects can contain other value objects:
+
+```ts
+class Money extends ValueObject {
+	constructor(
+		public readonly amount: number,
+		public readonly currency: string,
+	) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [this.amount, this.currency];
+	}
+}
+
+class PriceRange extends ValueObject {
+	constructor(
+		public readonly min: Money,
+		public readonly max: Money,
+	) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [
+			...this.min.getEqualityComponents(),
+			...this.max.getEqualityComponents(),
+		];
+	}
+}
+```
+
+## See also
+
+- [ValueObject reference](/docs/reference/core/value-object) -- full API details
+- [Defining Entities](/docs/guides/defining-entities) -- for objects identified by ID, not structure

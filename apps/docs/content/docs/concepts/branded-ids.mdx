@@ -1,0 +1,75 @@
+---
+title: Branded IDs
+description: Why nominal typing for entity identifiers matters
+---
+
+## The problem with plain strings
+
+In TypeScript, all strings are structurally compatible:
+
+```ts
+function findUser(id: string): User { /* ... */ }
+function findOrder(id: string): Order { /* ... */ }
+
+const userId = 'usr_abc123';
+const orderId = 'ord_xyz789';
+
+findUser(orderId); // No compile error! But logically wrong.
+```
+
+This is a source of subtle bugs. The type system cannot distinguish a user ID from an order ID because both are `string`.
+
+## Branded types
+
+A branded type adds a phantom property that exists only at the type level, making the type nominally distinct:
+
+```ts
+type Brand<TBase, TBrand extends string> = TBase & { readonly __brand: TBrand };
+
+type UserId = Brand<string, 'usr_id'>;
+type OrderId = Brand<string, 'ord_id'>;
+```
+
+Now TypeScript treats `UserId` and `OrderId` as incompatible types, even though both are strings at runtime:
+
+```ts
+function findUser(id: UserId): User { /* ... */ }
+
+const orderId: OrderId = /* ... */;
+findUser(orderId); // Compile error!
+```
+
+The `__brand` property is never set at runtime -- it exists purely in the type system. There is zero runtime overhead.
+
+## Prefixed IDs
+
+tact-ddd combines branded types with human-readable prefixes:
+
+```ts
+const UserId = defineIdType({ prefix: 'usr' });
+// Generates: 'usr_A7kB2mN9xP3qR5tW'
+```
+
+Prefixes provide benefits beyond type safety:
+
+1. **Debugging** -- you can immediately tell what kind of entity an ID refers to when reading logs or database records
+2. **Validation** -- `UserId.is(raw)` checks both format and prefix
+3. **Parsing** -- `UserId.parse(raw)` brands an existing string
+
+## The friendly alphabet
+
+IDs use a custom nanoid alphabet that excludes ambiguous characters:
+
+- No `0` (zero) vs `O` (capital O)
+- No `1` (one) vs `l` (lowercase L)
+
+This makes IDs easier to read, copy, and communicate verbally.
+
+## Trade-offs
+
+| Aspect | Benefit | Cost |
+| --- | --- | --- |
+| Type safety | Prevents ID mixups at compile time | Requires explicit `create()` / `parse()` |
+| Prefixes | Human-readable, self-describing | Slightly longer than bare UUIDs |
+| Branded types | Zero runtime overhead | Requires understanding of the pattern |
+| Nanoid | Short, URL-safe, fast | Not sortable by creation time (unlike ULIDs) |

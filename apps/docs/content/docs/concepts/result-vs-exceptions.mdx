@@ -1,0 +1,92 @@
+---
+title: Result vs Exceptions
+description: Two complementary error handling strategies and when to use which
+---
+
+## Two strategies
+
+tact-ddd provides two complementary approaches to error handling:
+
+1. **`Result<T, E>`** -- a type that explicitly represents success or failure in the return value
+2. **`ensure()` / thrown exceptions** -- assertion-based checks that throw when violated
+
+These are not competing approaches -- they serve different purposes.
+
+## When to use `Result<T, E>`
+
+Use `Result` for **expected domain failures** -- situations that are a normal part of your business logic and that the caller is expected to handle:
+
+- Validation errors (invalid email format, negative amount)
+- Business rule violations (insufficient funds, unavailable product)
+- Operations that can legitimately fail based on input
+
+```ts
+function withdraw(account: Account, amount: number): Result<Account> {
+	if (amount > account.balance) {
+		return err(new DomainError('INSUFFICIENT_FUNDS'));
+	}
+	return ok(account.debit(amount));
+}
+
+// Caller handles both cases explicitly
+const result = withdraw(account, 500);
+if (result.ok) {
+	save(result.value);
+} else {
+	notify(result.error);
+}
+```
+
+Benefits:
+- **Explicit** -- the caller cannot ignore the failure case
+- **Type-safe** -- TypeScript narrows the type in each branch
+- **Composable** -- results can be chained and transformed
+- **No stack trace overhead** -- no exception creation cost
+
+## When to throw exceptions
+
+Use `ensure()` (which throws `InvariantViolation`) for **programming errors and impossible states** -- conditions that should never be false if the code is correct:
+
+- Invariants that protect the internal consistency of an aggregate
+- Null checks on values that should always exist
+- Preconditions on internal methods
+
+```ts
+class Order extends AggregateRoot<OrderId> {
+	place(): void {
+		// This is an invariant -- the code should never allow an empty order to reach here
+		ensure(this.lineItems.length > 0, 'ORDER_EMPTY');
+		// ...
+	}
+}
+```
+
+Benefits:
+- **Concise** -- one line for assertions
+- **Type narrowing** -- TypeScript narrows after `ensure()`
+- **Fail-fast** -- immediately surfaces programming errors
+- **Stack traces** -- full callstack for debugging
+
+## Decision guide
+
+| Situation | Use | Why |
+| --- | --- | --- |
+| User input validation | `Result` | Expected to fail; caller handles it |
+| Business rule check (external) | `Result` | Caller needs to decide what to do |
+| Internal invariant | `ensure()` | Bug if violated; fail fast |
+| Null check on expected value | `ensure()` | Programming error if null |
+| Entity not found in repository | `throw NotFoundError` | Exceptional case |
+| Constructor precondition | `ensure()` | Object cannot exist in invalid state |
+
+## The error hierarchy
+
+```
+Error
+└── DomainError           (code: string)
+    ├── InvariantViolation (thrown by ensure())
+    └── NotFoundError      (entity lookup failure)
+```
+
+`DomainError` can be used with both strategies:
+- As the `E` in `Result<T, DomainError>` (returned)
+- As a thrown exception (for unexpected cases)

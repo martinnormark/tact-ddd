@@ -1,0 +1,4 @@
+{
+	"title": "@tact-ddd/events",
+	"pages": ["index", "domain-events", "integration-events", "dispatchers"]
+}

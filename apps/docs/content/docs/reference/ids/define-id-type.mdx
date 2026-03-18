@@ -1,0 +1,76 @@
+---
+title: defineIdType
+description: "Factory function for defining branded ID types with prefixes"
+---
+
+```ts
+import { defineIdType, type Brand, type IdConfig } from '@tact-ddd/ids';
+```
+
+## `Brand<TBase, TBrand>`
+
+Generic utility type for creating nominal (branded) types.
+
+```ts
+type Brand<TBase, TBrand extends string> = TBase & { readonly __brand: TBrand };
+```
+
+A `Brand<string, 'usr_id'>` is a `string` at runtime but is incompatible with other branded strings at compile time.
+
+## `IdConfig<P>`
+
+Configuration object for `defineIdType`.
+
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `prefix` | `P extends string` | (required) | Prefix prepended to the ID (e.g., `'usr'` produces `'usr_...'`) |
+| `length` | `number` | `16` | Length of the random portion (after the prefix and underscore) |
+| `strict` | `boolean` | -- | Whether to enforce the friendly character set when parsing |
+
+## `defineIdType<P>(config: IdConfig<P>)`
+
+Factory function that returns an ID helper object with methods to create, parse, and validate IDs.
+
+### Returns
+
+An object with the following shape:
+
+| Property / Method | Type | Description |
+| --- | --- | --- |
+| `prefix` | `P` | The configured prefix |
+| `length` | `number` | The configured random portion length |
+| `create()` | `() => Brand<string, 'P_id'>` | Generate a new unique ID (where P is your prefix) |
+| `parse(raw: string)` | `(raw: string) => Brand<string, 'P_id'>` | Parse and brand an existing string (where P is your prefix) |
+| `is(raw: string)` | `(raw: string) => boolean` | Check if a string matches the expected format |
+
+### Example
+
+```ts
+const UserId = defineIdType({ prefix: 'usr' });
+type UserId = ReturnType<typeof UserId.create>;
+
+// Generate
+const id = UserId.create();     // 'usr_A7kB2mN9xP3qR5tW'
+
+// Parse
+const parsed = UserId.parse('usr_A7kB2mN9xP3qR5tW');
+
+// Validate
+UserId.is('usr_A7kB2mN9xP3qR5tW'); // true
+UserId.is('ord_A7kB2mN9xP3qR5tW'); // false
+UserId.is('invalid');                // false
+```
+
+### Custom length
+
+```ts
+const ShortId = defineIdType({ prefix: 'sh', length: 8 });
+ShortId.create(); // 'sh_A7kB2mN9'
+```
+
+### ID format
+
+Generated IDs follow the pattern `<prefix>_<random>` where:
+
+- **prefix**: The configured prefix string
+- **random**: A nanoid-generated string using a friendly alphabet (`123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz`) that excludes ambiguous characters (0/O, 1/l)
