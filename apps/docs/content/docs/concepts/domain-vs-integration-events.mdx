@@ -1,0 +1,69 @@
+---
+title: Domain vs Integration Events
+description: Two kinds of events and when to use each
+---
+
+## Two purposes, two types
+
+tact-ddd distinguishes between two kinds of events:
+
+| | Domain Events | Integration Events |
+| --- | --- | --- |
+| **Scope** | Within a bounded context | Across service boundaries |
+| **Audience** | Internal handlers in the same process | External subscribers (other services) |
+| **Identity** | Tied to an `aggregateId` | Has a `source` service identifier |
+| **Types** | Can reference domain types | Should use only primitive/serializable types |
+| **Delivery** | In-memory dispatcher | Message broker (via outbox) |
+
+## Domain events
+
+A domain event records that something meaningful happened inside your domain model. It is emitted by an aggregate root and consumed by handlers within the same bounded context.
+
+```ts
+// Emitted inside the aggregate
+this.addDomainEvent(
+	createDomainEvent('OrderPlaced', this.id, { itemCount: 3 }),
+);
+
+// Handled in the same process
+dispatcher.register('OrderPlaced', new UpdateInventoryHandler());
+```
+
+Domain events are part of the **ubiquitous language** -- they are named in domain terms and carry domain-specific data.
+
+## Integration events
+
+An integration event communicates a change to other services or bounded contexts. It typically:
+
+- Contains only **serializable, primitive data** (no domain objects)
+- Includes a `source` field identifying the originating service
+- Is published through a **message broker** (RabbitMQ, Kafka, SQS, etc.)
+- May use a different naming convention or schema than domain events
+
+```ts
+class OrderShippedEvent extends IntegrationEventBase {
+	constructor(
+		public readonly orderId: string,  // primitive, not OrderId
+		public readonly trackingNumber: string,
+	) {
+		super('OrderShipped', 'order-service');
+	}
+}
+```
+
+## The mapping between them
+
+Domain events and integration events are often related but not identical. A common pattern:
+
+1. Aggregate emits domain event (`OrderPlaced`)
+2. A domain event handler maps it to an integration event (`OrderPlacedIntegration`) with only the data external consumers need
+3. The integration event is stored in the outbox for reliable delivery
+4. The outbox processor publishes it to the message broker
+
+This separation keeps your domain model clean -- internal events can carry rich domain types, while external events carry only the stable, serializable contract.
+
+## When to use which
+
+- **Domain event**: when the consumer is in the same bounded context and process
+- **Integration event**: when the consumer is in a different service, bounded context, or process
+- **Both**: when internal handlers need the event AND external services need to be notified (use a handler to map domain -> integration)

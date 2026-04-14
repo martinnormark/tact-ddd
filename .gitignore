@@ -6,6 +6,11 @@ out
 dist
 *.tgz
 
+# generated docs assets
+apps/docs/.next/
+apps/docs/public/llms-full.txt
+apps/docs/public/og/
+
 # code coverage
 coverage
 *.lcov

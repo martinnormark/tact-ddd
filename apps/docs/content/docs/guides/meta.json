@@ -1,0 +1,15 @@
+{
+	"title": "Guides",
+	"icon": "BookOpen",
+	"pages": [
+		"index",
+		"defining-entities",
+		"creating-value-objects",
+		"using-result-type",
+		"error-handling",
+		"typed-ids",
+		"dispatching-domain-events",
+		"publishing-integration-events",
+		"implementing-outbox-store"
+	]
+}

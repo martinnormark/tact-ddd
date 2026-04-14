@@ -1,0 +1,67 @@
+---
+title: Publishing Integration Events
+description: How to publish cross-service integration events via the event bus
+---
+
+Integration events communicate across service boundaries. Unlike domain events (internal to a bounded context), integration events carry a `source` field identifying the originating service.
+
+## Define an integration event
+
+Using the class-based approach:
+
+```ts
+import { IntegrationEventBase } from '@tact-ddd/events';
+
+class OrderShippedEvent extends IntegrationEventBase {
+	constructor(
+		public readonly orderId: string,
+		public readonly trackingNumber: string,
+	) {
+		super('OrderShipped', 'order-service');
+	}
+}
+```
+
+## Publish via the event bus
+
+```ts
+import { InMemoryIntegrationEventBus } from '@tact-ddd/events';
+
+const bus = new InMemoryIntegrationEventBus();
+
+const event = new OrderShippedEvent('ord_abc123', 'TRACK-456');
+await bus.publish(event);
+
+// For testing, InMemoryIntegrationEventBus stores published events
+console.log(bus.published); // [OrderShippedEvent { ... }]
+```
+
+## Implement a custom bus for production
+
+The `InMemoryIntegrationEventBus` is useful for testing. For production, implement the `IntegrationEventBus` interface:
+
+```ts
+import type { IntegrationEventBus, IntegrationEvent } from '@tact-ddd/events';
+
+class RabbitMQEventBus implements IntegrationEventBus {
+	async publish(event: IntegrationEvent): Promise<void> {
+		// Publish to RabbitMQ, Kafka, SQS, etc.
+	}
+
+	async publishAll(events: readonly IntegrationEvent[]): Promise<void> {
+		for (const event of events) {
+			await this.publish(event);
+		}
+	}
+}
+```
+
+## Combine with the outbox pattern
+
+For reliable publishing (ensuring events are not lost if the process crashes), use the [transactional outbox](/docs/tutorials/transactional-outbox) pattern instead of publishing directly.
+
+## See also
+
+- [Integration Events reference](/docs/reference/events/integration-events) -- full API details
+- [Domain vs Integration Events](/docs/concepts/domain-vs-integration-events) -- when to use which
+- [Transactional Outbox tutorial](/docs/tutorials/transactional-outbox) -- reliable event publishing

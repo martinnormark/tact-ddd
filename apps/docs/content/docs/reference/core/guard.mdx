@@ -1,0 +1,60 @@
+---
+title: Guard
+description: "ensure() assertion function for enforcing invariants"
+---
+
+```ts
+import { ensure } from '@tact-ddd/core';
+```
+
+## `ensure(condition, code, message?)`
+
+Assertion function that throws `InvariantViolation` if the condition is falsy. TypeScript narrows the type after a successful `ensure()` call.
+
+### Signature
+
+```ts
+function ensure(
+	condition: unknown,
+	code: string,
+	message?: string,
+): asserts condition;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `condition` | `unknown` | The condition to assert |
+| `code` | `string` | Error code passed to `InvariantViolation` |
+| `message` | `string` (optional) | Human-readable error message |
+
+### Throws
+
+`InvariantViolation` when `condition` is falsy.
+
+### Examples
+
+Basic assertion:
+
+```ts
+ensure(amount > 0, 'INVALID_AMOUNT', 'Amount must be positive');
+```
+
+Type narrowing:
+
+```ts
+function processUser(user: User | undefined): void {
+	ensure(user !== undefined, 'USER_REQUIRED');
+	// TypeScript narrows: user is User
+	console.log(user.email);
+}
+```
+
+Null check:
+
+```ts
+const item = items[0];
+ensure(item !== undefined, 'EMPTY_LIST', 'Expected at least one item');
+// item is narrowed to non-undefined
+```

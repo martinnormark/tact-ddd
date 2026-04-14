@@ -1,0 +1,26 @@
+---
+title: "@tact-ddd/outbox"
+description: Transactional outbox pattern with ports and adapters
+---
+
+The outbox package implements the transactional outbox pattern. It defines port interfaces (`OutboxStore`, `OutboxSerializer`) that you implement for your infrastructure, and provides a concrete `OutboxProcessor` that processes pending messages.
+
+```sh
+bun add @tact-ddd/outbox @tact-ddd/events
+```
+
+## Peer dependency
+
+This package requires `@tact-ddd/events` ^0.1.0 as a peer dependency. It uses `IntegrationEvent` and `IntegrationEventBus` from that package.
+
+## Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| [`OutboxMessageStatus`](/docs/reference/outbox/outbox-message) | Type alias | Message status union |
+| [`OutboxMessage`](/docs/reference/outbox/outbox-message) | Interface | Full outbox record shape |
+| [`OutboxSerializedEvent`](/docs/reference/outbox/serializer) | Interface | Serialized event shape |
+| [`OutboxSerializer`](/docs/reference/outbox/serializer) | Interface (port) | Serialization contract |
+| [`OutboxStore`](/docs/reference/outbox/store) | Interface (port) | Storage contract |
+| [`OutboxProcessorOptions`](/docs/reference/outbox/processor) | Interface | Processor configuration |
+| [`OutboxProcessor`](/docs/reference/outbox/processor) | Class | Concrete message processor |

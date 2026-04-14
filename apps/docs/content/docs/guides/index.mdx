@@ -1,0 +1,47 @@
+---
+title: Guides
+description: Task-oriented recipes for specific problems
+---
+
+Guides are **task-oriented** -- each one shows you how to accomplish a specific goal. They assume you already have some understanding of the packages and want to get something done.
+
+If you are new to tact-ddd, start with the [Tutorials](/docs/tutorials) section instead.
+
+## Core patterns
+
+<Cards>
+  <Card title="Defining Entities" href="/docs/guides/defining-entities">
+    Create Entity subclasses with identity-based equality
+  </Card>
+  <Card title="Creating Value Objects" href="/docs/guides/creating-value-objects">
+    Implement ValueObject with structural equality
+  </Card>
+  <Card title="Using the Result Type" href="/docs/guides/using-result-type">
+    Return success or failure from domain operations without throwing
+  </Card>
+  <Card title="Error Handling" href="/docs/guides/error-handling">
+    Use ensure(), DomainError, InvariantViolation, and NotFoundError
+  </Card>
+</Cards>
+
+## IDs and events
+
+<Cards>
+  <Card title="Typed IDs" href="/docs/guides/typed-ids">
+    Define and use branded ID types with prefixes
+  </Card>
+  <Card title="Dispatching Domain Events" href="/docs/guides/dispatching-domain-events">
+    Wire up the InMemoryDomainEventDispatcher with handlers
+  </Card>
+  <Card title="Publishing Integration Events" href="/docs/guides/publishing-integration-events">
+    Publish cross-service integration events via the event bus
+  </Card>
+</Cards>
+
+## Infrastructure
+
+<Cards>
+  <Card title="Implementing an Outbox Store" href="/docs/guides/implementing-outbox-store">
+    Implement the OutboxStore port for your database
+  </Card>
+</Cards>

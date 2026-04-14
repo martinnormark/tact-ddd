@@ -1,0 +1,13 @@
+{
+	"title": "Concepts",
+	"icon": "Lightbulb",
+	"pages": [
+		"index",
+		"tactical-ddd",
+		"aggregates-and-consistency",
+		"domain-vs-integration-events",
+		"result-vs-exceptions",
+		"branded-ids",
+		"ports-and-adapters"
+	]
+}

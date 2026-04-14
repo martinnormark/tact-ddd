@@ -1,0 +1,50 @@
+---
+title: OutboxStore
+description: "OutboxStore port interface for outbox storage"
+---
+
+```ts
+import type { OutboxStore } from '@tact-ddd/outbox';
+```
+
+## `OutboxStore`
+
+Port interface that defines how outbox messages are stored and retrieved. You must implement this for your specific database.
+
+```ts
+interface OutboxStore {
+	readonly serializer: OutboxSerializer;
+	add(event: IntegrationEvent): Promise<void>;
+	getPending(batchSize: number): Promise<readonly OutboxMessage[]>;
+	markProcessed(id: string): Promise<void>;
+	markFailed(id: string, error: Error): Promise<void>;
+}
+```
+
+### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `serializer` | `OutboxSerializer` (readonly) | The serializer used by this store |
+
+### Methods
+
+#### `add(event: IntegrationEvent): Promise<void>`
+
+Serialize and store an integration event as a pending outbox message. This should be called within the same database transaction as your domain state changes.
+
+#### `getPending(batchSize: number): Promise<readonly OutboxMessage[]>`
+
+Retrieve up to `batchSize` pending messages ordered by creation time. Consider using row-level locking (`FOR UPDATE SKIP LOCKED` in SQL) for concurrent processor support.
+
+#### `markProcessed(id: string): Promise<void>`
+
+Mark a message as successfully processed. Should be idempotent.
+
+#### `markFailed(id: string, error: Error): Promise<void>`
+
+Mark a message as failed, recording the error message. Should increment the retry count.
+
+## Implementation guide
+
+See [Implementing an Outbox Store](/docs/guides/implementing-outbox-store) for a complete implementation with PostgreSQL.

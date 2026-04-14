@@ -1,0 +1,132 @@
+---
+title: Domain Events Workflow
+description: Wire up domain events from aggregate creation through dispatching to handler execution
+---
+
+In this tutorial you will build a complete event-driven workflow: an aggregate emits domain events, a dispatcher routes them, and handlers react to them.
+
+## What you will learn
+
+- Create domain events with `createDomainEvent()`
+- Register event handlers with `InMemoryDomainEventDispatcher`
+- Pull events from an aggregate and dispatch them
+- Use correlation and causation IDs for traceability
+
+## What you will build
+
+A workflow where:
+
+1. A `User` aggregate emits a `UserRegistered` event on creation
+2. A dispatcher routes the event to registered handlers
+3. Handlers send a welcome email and create an audit log entry
+
+## Prerequisites
+
+```sh
+bun add @tact-ddd/core @tact-ddd/events @tact-ddd/ids
+```
+
+## Steps
+
+### 1. Define the aggregate
+
+```ts
+import { AggregateRoot } from '@tact-ddd/core';
+import { type DomainEvent, createDomainEvent } from '@tact-ddd/events';
+import { defineIdType } from '@tact-ddd/ids';
+
+const UserId = defineIdType({ prefix: 'usr' });
+type UserId = ReturnType<typeof UserId.create>;
+
+class User extends AggregateRoot<UserId, DomainEvent<UserId>> {
+	constructor(
+		id: UserId,
+		public readonly email: string,
+	) {
+		super(id);
+		this.addDomainEvent(
+			createDomainEvent('UserRegistered', id, { email }),
+		);
+	}
+}
+```
+
+### 2. Create event handlers
+
+```ts
+import type { DomainEventHandler, DomainEvent } from '@tact-ddd/events';
+
+type UserRegisteredEvent = DomainEvent<UserId> & { readonly email: string };
+
+class SendWelcomeEmailHandler implements DomainEventHandler<UserRegisteredEvent> {
+	async handle(event: UserRegisteredEvent): Promise<void> {
+		console.log(`Sending welcome email to ${event.email}`);
+		// In production: call your email service
+	}
+}
+
+class CreateAuditLogHandler implements DomainEventHandler<UserRegisteredEvent> {
+	async handle(event: UserRegisteredEvent): Promise<void> {
+		console.log(`Audit: user registered ${event.aggregateId} at ${event.occurredAt}`);
+		// In production: write to audit log store
+	}
+}
+```
+
+### 3. Wire up the dispatcher
+
+```ts
+import { InMemoryDomainEventDispatcher } from '@tact-ddd/events';
+
+const dispatcher = new InMemoryDomainEventDispatcher();
+dispatcher.register('UserRegistered', new SendWelcomeEmailHandler());
+dispatcher.register('UserRegistered', new CreateAuditLogHandler());
+```
+
+### 4. Create an aggregate and dispatch its events
+
+```ts
+const user = new User(UserId.create(), 'alice@example.com');
+
+// Pull events from the aggregate (clears the internal buffer)
+const events = user.pullDomainEvents();
+
+// Dispatch all events
+await dispatcher.publishAll(events);
+// Output:
+//   Sending welcome email to alice@example.com
+//   Audit: user registered usr_... at 2025-...
+```
+
+### 5. Add correlation IDs for traceability
+
+```ts
+const correlationId = crypto.randomUUID();
+
+const user2 = new User(UserId.create(), 'bob@example.com');
+
+// Override event metadata at creation time
+class TrackedUser extends AggregateRoot<UserId, DomainEvent<UserId>> {
+	constructor(
+		id: UserId,
+		public readonly email: string,
+		correlationId?: string,
+	) {
+		super(id);
+		this.addDomainEvent(
+			createDomainEvent('UserRegistered', id, { email }, { correlationId }),
+		);
+	}
+}
+```
+
+## What's next
+
+<Cards>
+  <Card title="Transactional Outbox" href="/docs/tutorials/transactional-outbox">
+    Ensure events are reliably published even if the process crashes
+  </Card>
+  <Card title="Domain vs Integration Events" href="/docs/concepts/domain-vs-integration-events">
+    Understand when to use domain events vs integration events
+  </Card>
+</Cards>

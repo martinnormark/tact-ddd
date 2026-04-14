@@ -1,0 +1,64 @@
+---
+title: Defining Entities
+description: How to create Entity subclasses with identity-based equality
+---
+
+Entities are domain objects identified by a unique ID rather than by their attributes. Two entities are equal if they have the same ID, regardless of other properties.
+
+## Create an entity
+
+Extend the `Entity` abstract class and pass your ID type as the generic parameter:
+
+```ts
+import { Entity } from '@tact-ddd/core';
+
+class Product extends Entity<string> {
+	constructor(
+		id: string,
+		public readonly name: string,
+		public readonly price: number,
+	) {
+		super(id);
+	}
+}
+```
+
+## Use typed IDs
+
+For type safety, combine with `@tact-ddd/ids`:
+
+```ts
+import { Entity } from '@tact-ddd/core';
+import { defineIdType } from '@tact-ddd/ids';
+
+const ProductId = defineIdType({ prefix: 'prod' });
+type ProductId = ReturnType<typeof ProductId.create>;
+
+class Product extends Entity<ProductId> {
+	constructor(
+		id: ProductId,
+		public readonly name: string,
+		public readonly price: number,
+	) {
+		super(id);
+	}
+}
+```
+
+## Compare entities
+
+Entities use identity-based equality:
+
+```ts
+const a = new Product(ProductId.create(), 'Widget', 10);
+const b = new Product(ProductId.create(), 'Widget', 10);
+const c = new Product(a.id, 'Different Name', 99);
+
+a.equals(b); // false -- different IDs
+a.equals(c); // true -- same ID
+```
+
+## See also
+
+- [Entity reference](/docs/reference/core/entity) -- full API details
+- [Creating Value Objects](/docs/guides/creating-value-objects) -- for objects identified by structure, not ID

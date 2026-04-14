@@ -1,0 +1,28 @@
+---
+title: "@tact-ddd/core"
+description: Entity, AggregateRoot, ValueObject, Result, Guard, and Errors
+---
+
+The core package provides the fundamental tactical DDD building blocks. It has zero runtime dependencies.
+
+```sh
+bun add @tact-ddd/core
+```
+
+## Exports
+
+| Export | Kind | Description |
+| --- | --- | --- |
+| [`Entity`](/docs/reference/core/entity) | Abstract class | Base for all entities with identity-based equality |
+| [`AggregateRoot`](/docs/reference/core/aggregate-root) | Abstract class | Entity with domain event collection |
+| [`DomainEventLike`](/docs/reference/core/aggregate-root) | Interface | Minimal event shape used by AggregateRoot |
+| [`ValueObject`](/docs/reference/core/value-object) | Abstract class | Base for value objects with structural equality |
+| [`Result`](/docs/reference/core/result) | Type alias | Discriminated union for success/failure |
+| [`ok`](/docs/reference/core/result) | Function | Create a success Result |
+| [`err`](/docs/reference/core/result) | Function | Create a failure Result |
+| [`isOk`](/docs/reference/core/result) | Type guard | Narrow to success Result |
+| [`isErr`](/docs/reference/core/result) | Type guard | Narrow to failure Result |
+| [`DomainError`](/docs/reference/core/errors) | Class | Base error with a code property |
+| [`InvariantViolation`](/docs/reference/core/errors) | Class | Error thrown by `ensure()` |
+| [`NotFoundError`](/docs/reference/core/errors) | Class | Entity not found error |
+| [`ensure`](/docs/reference/core/guard) | Assertion function | Assert invariants at runtime |

@@ -1,0 +1,77 @@
+---
+title: Quick Start
+description: Build a minimal working example with tact-ddd in under 50 lines
+---
+
+A minimal example that creates a typed ID, defines an aggregate root with a value object, and emits a domain event.
+
+## Install
+
+```sh
+bun add @tact-ddd/core @tact-ddd/events @tact-ddd/ids
+```
+
+## Define a typed ID
+
+```ts
+import { defineIdType } from '@tact-ddd/ids';
+
+const UserId = defineIdType({ prefix: 'usr' });
+type UserId = ReturnType<typeof UserId.create>;
+```
+
+## Define a value object
+
+```ts
+import { ValueObject } from '@tact-ddd/core';
+
+class Email extends ValueObject {
+	constructor(public readonly value: string) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [this.value];
+	}
+}
+```
+
+## Define an aggregate root with a domain event
+
+```ts
+import { AggregateRoot } from '@tact-ddd/core';
+import { createDomainEvent } from '@tact-ddd/events';
+
+class User extends AggregateRoot<UserId> {
+	constructor(
+		id: UserId,
+		public readonly email: Email,
+	) {
+		super(id);
+		this.addDomainEvent(
+			createDomainEvent('UserCreated', id, { email: email.value }),
+		);
+	}
+}
+```
+
+## Use it
+
+```ts
+const user = new User(UserId.create(), new Email('alice@example.com'));
+
+const events = user.pullDomainEvents();
+console.log(events);
+// [{ name: 'UserCreated', aggregateId: 'usr_...', email: 'alice@example.com', occurredAt: Date }]
+```
+
+## Next steps
+
+<Cards>
+  <Card title="Modeling an Aggregate" href="/docs/tutorials/modeling-an-aggregate">
+    Full tutorial building a complete aggregate with validation
+  </Card>
+  <Card title="Domain Events Workflow" href="/docs/tutorials/domain-events-workflow">
+    Wire up event dispatching and handlers
+  </Card>
+</Cards>

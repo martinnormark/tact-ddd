@@ -1,0 +1,32 @@
+---
+title: Tutorials
+description: Step-by-step walkthroughs that teach you how to build with tact-ddd
+---
+
+Tutorials are **learning-oriented** -- they guide you through building something real, step by step, using multiple packages together. Each tutorial assumes you have tact-ddd installed and basic TypeScript knowledge.
+
+If you are looking for quick answers to specific tasks, see the [Guides](/docs/guides) section instead.
+
+## Available tutorials
+
+<Cards>
+  <Card title="Modeling an Aggregate" href="/docs/tutorials/modeling-an-aggregate">
+    Build a complete aggregate root with entities, value objects, typed IDs, and invariant enforcement
+  </Card>
+  <Card title="Domain Events Workflow" href="/docs/tutorials/domain-events-workflow">
+    Wire up domain events from aggregate creation through dispatching to handler execution
+  </Card>
+  <Card title="Transactional Outbox" href="/docs/tutorials/transactional-outbox">
+    Implement the full outbox pipeline: emit events, serialize, store, process, and publish
+  </Card>
+</Cards>
+
+## Prerequisites
+
+All tutorials assume:
+
+- TypeScript 5+ with strict mode enabled
+- Bun or Node.js 18+ as runtime
+- `@tact-ddd/core`, `@tact-ddd/events`, and `@tact-ddd/ids` installed
+
+Individual tutorials list any additional requirements.

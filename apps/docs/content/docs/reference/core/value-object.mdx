@@ -1,0 +1,67 @@
+---
+title: ValueObject
+description: "Abstract base class for value objects with structural equality"
+---
+
+```ts
+import { ValueObject } from '@tact-ddd/core';
+```
+
+## `ValueObject`
+
+Abstract base class for value objects. A value object is defined entirely by its attributes -- two value objects are equal if all their equality components match.
+
+### Constructor
+
+```ts
+protected constructor()
+```
+
+### Methods
+
+#### `getEqualityComponents(): readonly unknown[]` (protected, abstract)
+
+Return the components that define this value object's identity. Subclasses must implement this method.
+
+```ts
+class Email extends ValueObject {
+	constructor(public readonly value: string) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [this.value];
+	}
+}
+```
+
+#### `equals(other: ValueObject): boolean`
+
+Returns `true` if the other value object has the same equality components.
+
+```ts
+const a = new Email('alice@example.com');
+const b = new Email('alice@example.com');
+const c = new Email('bob@example.com');
+
+a.equals(b); // true
+a.equals(c); // false
+```
+
+### Pattern: multi-field value object
+
+```ts
+class Address extends ValueObject {
+	constructor(
+		public readonly street: string,
+		public readonly city: string,
+		public readonly postalCode: string,
+	) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [this.street, this.city, this.postalCode];
+	}
+}
+```

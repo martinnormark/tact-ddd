@@ -1,0 +1,65 @@
+---
+title: Getting Started
+description: Install tact-ddd packages and understand the project structure
+---
+
+## Overview
+
+tact-ddd is a TypeScript monorepo providing lightweight, composable tactical DDD (Domain-Driven Design) building blocks. Each package focuses on a single concern and can be used independently or composed together.
+
+## Packages
+
+| Package | Purpose |
+| --- | --- |
+| [`@tact-ddd/core`](/docs/reference/core) | Entity, AggregateRoot, ValueObject, Result, Guard, Errors |
+| [`@tact-ddd/events`](/docs/reference/events) | Domain events, integration events, dispatchers |
+| [`@tact-ddd/ids`](/docs/reference/ids) | Branded ID types with prefix + nanoid generation |
+| [`@tact-ddd/outbox`](/docs/reference/outbox) | Transactional outbox pattern (ports & adapters) |
+
+## Installation
+
+Install only the packages you need:
+
+```sh
+# Core building blocks
+bun add @tact-ddd/core
+
+# Domain and integration events
+bun add @tact-ddd/events
+
+# Typed, branded IDs
+bun add @tact-ddd/ids
+
+# Transactional outbox (requires @tact-ddd/events as peer)
+bun add @tact-ddd/outbox @tact-ddd/events
+```
+
+## Dependency graph
+
+The packages are designed for minimal coupling:
+
+```
+@tact-ddd/core       (standalone)
+@tact-ddd/events     (standalone)
+@tact-ddd/ids        (standalone, depends on nanoid)
+@tact-ddd/outbox  ── peer dependency ──> @tact-ddd/events
+```
+
+All packages require TypeScript 5+ and are shipped as ESM.
+
+## Requirements
+
+- **Runtime**: Node.js 18+ or Bun
+- **TypeScript**: 5.0+
+- **Module format**: ESM only
+
+## Next steps
+
+<Cards>
+  <Card title="Quick Start" href="/docs/getting-started/quick-start">
+    Build a minimal working example in under 50 lines
+  </Card>
+  <Card title="Tutorials" href="/docs/tutorials">
+    Step-by-step walkthroughs composing multiple packages
+  </Card>
+</Cards>

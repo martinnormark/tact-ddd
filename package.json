@@ -2,10 +2,12 @@
   "name": "tact-ddd",
   "private": true,
   "workspaces": [
+    "apps/*",
     "packages/*"
   ],
   "scripts": {
     "build": "bun --filter '*' build",
-    "check-types": "bun --filter '*' check-types"
+    "check-types": "bun --filter '*' check-types",
+    "dev": "bun --filter '@tact-ddd/docs' dev"
   }
 }

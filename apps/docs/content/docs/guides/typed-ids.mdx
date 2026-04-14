@@ -1,0 +1,69 @@
+---
+title: Typed IDs
+description: How to define and use branded ID types with prefixes
+---
+
+Branded IDs give you compile-time safety so you cannot accidentally pass a `UserId` where an `OrderId` is expected, while remaining plain strings at runtime.
+
+## Define an ID type
+
+```ts
+import { defineIdType } from '@tact-ddd/ids';
+
+const UserId = defineIdType({ prefix: 'usr' });
+type UserId = ReturnType<typeof UserId.create>;
+```
+
+This creates IDs like `usr_A7kB2mN9xP3qR5tW`.
+
+## Create and parse IDs
+
+```ts
+// Generate a new ID
+const id = UserId.create();
+// 'usr_A7kB2mN9xP3qR5tW'
+
+// Parse an existing string into the branded type
+const parsed = UserId.parse('usr_A7kB2mN9xP3qR5tW');
+// Returns the branded UserId type
+
+// Check if a string is a valid UserId
+UserId.is('usr_A7kB2mN9xP3qR5tW'); // true
+UserId.is('ord_A7kB2mN9xP3qR5tW'); // false (wrong prefix)
+UserId.is('invalid');                // false
+```
+
+## Type safety in practice
+
+The branded type prevents mixing up IDs at compile time:
+
+```ts
+const OrderId = defineIdType({ prefix: 'ord' });
+type OrderId = ReturnType<typeof OrderId.create>;
+
+function findUser(id: UserId): void { /* ... */ }
+function findOrder(id: OrderId): void { /* ... */ }
+
+const userId = UserId.create();
+const orderId = OrderId.create();
+
+findUser(userId);   // OK
+findUser(orderId);  // Compile error: OrderId is not assignable to UserId
+```
+
+## Configure ID length
+
+```ts
+const ShortId = defineIdType({ prefix: 'sh', length: 8 });
+// Produces: 'sh_A7kB2mN9'
+
+const LongId = defineIdType({ prefix: 'lng', length: 24 });
+// Produces: 'lng_A7kB2mN9xP3qR5tWjL4vY8'
+```
+
+The default length is 16 characters (after the prefix).
+
+## See also
+
+- [defineIdType reference](/docs/reference/ids/define-id-type) -- full API details
+- [Branded IDs concept](/docs/concepts/branded-ids) -- why nominal typing matters for IDs

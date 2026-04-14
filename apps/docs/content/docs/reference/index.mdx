@@ -1,0 +1,34 @@
+---
+title: API Reference
+description: Exhaustive API documentation for every tact-ddd package
+---
+
+Reference documentation is **information-oriented** -- it describes the API surface of each package precisely, including every class, interface, type, and function.
+
+## Packages
+
+<Cards>
+  <Card title="@tact-ddd/core" href="/docs/reference/core">
+    Entity, AggregateRoot, ValueObject, Result, Guard, Errors
+  </Card>
+  <Card title="@tact-ddd/events" href="/docs/reference/events">
+    Domain events, integration events, dispatchers
+  </Card>
+  <Card title="@tact-ddd/ids" href="/docs/reference/ids">
+    Branded ID types with prefix and nanoid generation
+  </Card>
+  <Card title="@tact-ddd/outbox" href="/docs/reference/outbox">
+    Transactional outbox pattern (ports and adapters)
+  </Card>
+</Cards>
+
+## Dependency graph
+
+```
+@tact-ddd/core       (standalone)
+@tact-ddd/events     (standalone)
+@tact-ddd/ids        (standalone, depends on nanoid)
+@tact-ddd/outbox  ── peer dependency ──> @tact-ddd/events
+```
+
+All packages require TypeScript 5+ and ship as ESM (`.mjs` + `.d.ts`).

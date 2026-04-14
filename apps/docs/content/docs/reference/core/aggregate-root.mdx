@@ -1,0 +1,75 @@
+---
+title: AggregateRoot
+description: "Abstract base class for aggregate roots with domain event collection"
+---
+
+```ts
+import { AggregateRoot, type DomainEventLike } from '@tact-ddd/core';
+```
+
+## `DomainEventLike`
+
+Minimal interface that domain events must satisfy to be collected by an aggregate root.
+
+```ts
+interface DomainEventLike {
+	readonly name: string;
+	readonly occurredAt: Date;
+}
+```
+
+## `AggregateRoot<TId, TEvent>`
+
+Abstract base class extending `Entity<TId>`. Maintains an internal buffer of domain events that can be pulled after an operation completes.
+
+### Type parameters
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `TId` | -- | The type of the aggregate's identifier |
+| `TEvent` | `DomainEventLike` | The event type constraint |
+
+### Constructor
+
+```ts
+protected constructor(id: TId)
+```
+
+### Properties
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | `TId` (readonly) | Inherited from `Entity` |
+| `domainEvents` | `readonly TEvent[]` | Current buffered events (read-only view) |
+
+### Methods
+
+#### `addDomainEvent(event: TEvent): void` (protected)
+
+Add a domain event to the internal buffer. Only callable from within the aggregate.
+
+```ts
+class Order extends AggregateRoot<OrderId> {
+	place(): void {
+		this.addDomainEvent(
+			createDomainEvent('OrderPlaced', this.id, {}),
+		);
+	}
+}
+```
+
+#### `pullDomainEvents(): readonly TEvent[]`
+
+Returns all buffered domain events and clears the internal buffer. This is the standard way to retrieve events after performing an operation.
+
+```ts
+const order = new Order(OrderId.create());
+order.place();
+
+const events = order.pullDomainEvents(); // returns [OrderPlaced]
+order.pullDomainEvents();                // returns [] (buffer cleared)
+```
+
+#### `clearDomainEvents(): void`
+
+Clears the internal event buffer without returning the events.

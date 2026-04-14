@@ -1,0 +1,68 @@
+---
+title: OutboxSerializer
+description: "OutboxSerializer and OutboxSerializedEvent interfaces"
+---
+
+```ts
+import type { OutboxSerializer, OutboxSerializedEvent } from '@tact-ddd/outbox';
+```
+
+## `OutboxSerializedEvent`
+
+The shape of a serialized event before it is stored in the outbox.
+
+```ts
+interface OutboxSerializedEvent {
+	readonly eventName: string;
+	readonly eventType: string;
+	readonly payload: unknown;
+	readonly occurredAt: Date;
+	readonly correlationId?: string;
+	readonly causationId?: string;
+}
+```
+
+## `OutboxSerializer`
+
+Port interface for serializing integration events to/from the outbox format. You must implement this for your application.
+
+```ts
+interface OutboxSerializer {
+	serialize(event: IntegrationEvent): OutboxSerializedEvent;
+	deserialize(message: OutboxMessage): IntegrationEvent;
+}
+```
+
+### Methods
+
+#### `serialize(event: IntegrationEvent): OutboxSerializedEvent`
+
+Convert an integration event into the serialized form for storage.
+
+#### `deserialize(message: OutboxMessage): IntegrationEvent`
+
+Reconstruct an integration event from a stored outbox message. Called by `OutboxProcessor` when processing pending messages.
+
+### Implementation example
+
+```ts
+class JsonOutboxSerializer implements OutboxSerializer {
+	serialize(event: IntegrationEvent): OutboxSerializedEvent {
+		return {
+			eventName: event.name,
+			eventType: event.constructor.name,
+			payload: { ...event },
+			occurredAt: event.occurredAt,
+			correlationId: event.correlationId,
+			causationId: event.causationId,
+		};
+	}
+
+	deserialize(message: OutboxMessage): IntegrationEvent {
+		// Reconstruct based on eventType or eventName
+		// This is application-specific
+	}
+}
+```
+
+See [Implementing an Outbox Store](/docs/guides/implementing-outbox-store) for a complete implementation guide.

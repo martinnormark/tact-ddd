@@ -1,0 +1,50 @@
+---
+title: tact-ddd
+description: Lightweight, composable tactical DDD building blocks for TypeScript
+---
+
+Tactical DDD building blocks for TypeScript -- entities, value objects, aggregate roots, domain events, typed IDs, and the transactional outbox pattern.
+
+## Packages
+
+<Cards>
+  <Card title="@tact-ddd/core" href="/docs/reference/core">
+    Entity, AggregateRoot, ValueObject, Result, Guard, and Errors
+  </Card>
+  <Card title="@tact-ddd/events" href="/docs/reference/events">
+    Domain events, integration events, and dispatchers
+  </Card>
+  <Card title="@tact-ddd/ids" href="/docs/reference/ids">
+    Branded ID types with prefix and nanoid generation
+  </Card>
+  <Card title="@tact-ddd/outbox" href="/docs/reference/outbox">
+    Transactional outbox pattern with ports and adapters
+  </Card>
+</Cards>
+
+## Documentation
+
+This documentation follows the [Diataxis](https://diataxis.fr/) framework, organized into four complementary sections:
+
+<Cards>
+  <Card title="Tutorials" href="/docs/tutorials" icon="GraduationCap">
+    Step-by-step walkthroughs building real things with multiple packages
+  </Card>
+  <Card title="Guides" href="/docs/guides" icon="BookOpen">
+    Task-oriented recipes for specific problems
+  </Card>
+  <Card title="Reference" href="/docs/reference" icon="FileCode">
+    Exhaustive API documentation for every package
+  </Card>
+  <Card title="Concepts" href="/docs/concepts" icon="Lightbulb">
+    Explanations of DDD patterns and design decisions
+  </Card>
+</Cards>
+
+## Quick install
+
+```sh
+bun add @tact-ddd/core @tact-ddd/events @tact-ddd/ids
+```
+
+Or install only the packages you need -- they are independently usable and have minimal dependencies.

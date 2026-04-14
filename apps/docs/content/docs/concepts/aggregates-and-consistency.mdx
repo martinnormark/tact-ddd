@@ -1,0 +1,72 @@
+---
+title: Aggregates & Consistency
+description: Understanding aggregate boundaries, invariants, and transactional consistency
+---
+
+## What is an aggregate?
+
+An aggregate is a cluster of domain objects (entities and value objects) that are treated as a single unit for data changes. Every aggregate has a **root entity** -- the aggregate root -- which is the only object that external code can hold a reference to.
+
+```
+┌─────────────────────────────────┐
+│         Order (root)            │
+│                                 │
+│  ┌───────────┐  ┌───────────┐  │
+│  │ LineItem  │  │ LineItem  │  │
+│  │  (entity) │  │  (entity) │  │
+│  └───────────┘  └───────────┘  │
+│                                 │
+│  ┌────────────────────┐        │
+│  │ ShippingAddress    │        │
+│  │  (value object)    │        │
+│  └────────────────────┘        │
+└─────────────────────────────────┘
+```
+
+## The consistency boundary
+
+The aggregate defines a **transactional consistency boundary**. All invariants within the aggregate are guaranteed after every operation. Changes to objects inside the aggregate are only made through the aggregate root.
+
+This is why `AggregateRoot` exists as a separate concept from `Entity` -- it carries the responsibility of:
+
+1. **Enforcing invariants** across its internal objects
+2. **Collecting domain events** that represent the state changes
+3. **Being the unit of persistence** (you load and save entire aggregates)
+
+## Invariants
+
+An invariant is a business rule that must always be true. Examples:
+
+- An order must have at least one line item to be placed
+- An account balance cannot go below zero
+- A booking cannot overlap with another booking for the same resource
+
+In tact-ddd, you enforce invariants in two ways:
+
+- **`ensure()`** for conditions that must always hold (programming errors if violated)
+- **`Result<T, E>`** for conditions that depend on user input (expected failures)
+
+## Cross-aggregate references
+
+Aggregates reference each other **by ID**, never by direct object reference. This is why typed IDs (`@tact-ddd/ids`) are valuable -- they prevent accidentally using an `OrderId` where a `UserId` is expected.
+
+```ts
+class Order extends AggregateRoot<OrderId> {
+	// Reference to another aggregate by ID only
+	constructor(
+		id: OrderId,
+		public readonly customerId: CustomerId,
+	) {
+		super(id);
+	}
+}
+```
+
+## Cross-aggregate consistency
+
+Changes spanning multiple aggregates cannot be made in a single transaction. Instead, use **domain events** to coordinate:
+
+1. Aggregate A completes its operation and emits an event
+2. A handler reacts to the event and performs the operation on Aggregate B
+
+This is **eventual consistency** -- there is a brief window where the aggregates may be inconsistent. The [transactional outbox](/docs/tutorials/transactional-outbox) pattern ensures events are not lost during this process.

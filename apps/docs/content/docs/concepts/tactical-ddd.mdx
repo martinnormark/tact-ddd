@@ -1,0 +1,53 @@
+---
+title: Tactical DDD
+description: What is tactical DDD and why tact-ddd provides these specific building blocks
+---
+
+## Strategic vs tactical DDD
+
+Domain-Driven Design operates at two levels:
+
+- **Strategic DDD** deals with bounded contexts, context maps, and how teams decompose a large domain. It is about organization and boundaries.
+- **Tactical DDD** deals with the patterns used _inside_ a bounded context to model domain logic: entities, value objects, aggregates, domain events, and repositories.
+
+tact-ddd focuses exclusively on the tactical side. It provides the building blocks you use within a bounded context, without prescribing how you organize your bounded contexts or services.
+
+## The building blocks
+
+Tactical DDD defines several standard patterns:
+
+| Pattern | Purpose | tact-ddd package |
+| --- | --- | --- |
+| **Entity** | Object with a unique identity that persists over time | `@tact-ddd/core` |
+| **Value Object** | Object defined by its attributes, with no identity | `@tact-ddd/core` |
+| **Aggregate Root** | Entity that is the entry point to a cluster of objects, enforcing consistency boundaries | `@tact-ddd/core` |
+| **Domain Event** | Record of something that happened in the domain | `@tact-ddd/events` |
+| **Repository** | Abstraction for aggregate persistence | (not provided -- infrastructure-specific) |
+
+tact-ddd also provides building blocks that are not part of the original DDD book but have become standard practice:
+
+| Pattern | Purpose | Package |
+| --- | --- | --- |
+| **Branded IDs** | Type-safe identifiers with runtime prefixes | `@tact-ddd/ids` |
+| **Result type** | Explicit success/failure returns | `@tact-ddd/core` |
+| **Integration Events** | Cross-service event communication | `@tact-ddd/events` |
+| **Transactional Outbox** | Reliable event publishing | `@tact-ddd/outbox` |
+
+## Design principles
+
+tact-ddd is designed around these principles:
+
+1. **Lightweight** -- abstract base classes with minimal behavior, not heavy frameworks
+2. **Composable** -- each package is independently usable; combine what you need
+3. **Type-safe** -- leverages TypeScript's type system (branded types, discriminated unions, assertion functions) to catch errors at compile time
+4. **Minimal coupling** -- packages depend on interfaces and structural typing, not on each other (with one exception: outbox depends on events)
+5. **No magic** -- no decorators, no reflection, no code generation. Plain TypeScript classes and functions
+
+## What tact-ddd does not provide
+
+tact-ddd deliberately excludes:
+
+- **Repositories** -- these are tightly coupled to your persistence layer (Prisma, Drizzle, raw SQL, etc.)
+- **Application services / use cases** -- these are application-specific orchestration
+- **CQRS** -- this is an architectural pattern, not a building block
+- **Saga / process managers** -- planned for a future package

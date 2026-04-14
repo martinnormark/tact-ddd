@@ -1,0 +1,170 @@
+---
+title: Modeling an Aggregate
+description: Build a complete aggregate root with entities, value objects, typed IDs, and invariant enforcement
+---
+
+In this tutorial you will build a complete `Order` aggregate root from scratch, combining multiple tact-ddd packages to model a realistic domain object.
+
+## What you will learn
+
+- Define branded ID types with `@tact-ddd/ids`
+- Create value objects with structural equality using `@tact-ddd/core`
+- Build an entity and an aggregate root
+- Enforce invariants with `ensure()` and `Result`
+- Emit domain events when state changes
+
+## What you will build
+
+An `Order` aggregate that:
+
+- Has a typed `OrderId` and contains `LineItem` entities with `LineItemId`s
+- Uses a `Money` value object for prices
+- Validates business rules (e.g., an order must have at least one line item to be placed)
+- Emits `OrderPlaced` and `LineItemAdded` domain events
+
+## Prerequisites
+
+```sh
+bun add @tact-ddd/core @tact-ddd/events @tact-ddd/ids
+```
+
+## Steps
+
+### 1. Define typed IDs
+
+```ts
+import { defineIdType } from '@tact-ddd/ids';
+
+const OrderId = defineIdType({ prefix: 'ord' });
+type OrderId = ReturnType<typeof OrderId.create>;
+
+const LineItemId = defineIdType({ prefix: 'li' });
+type LineItemId = ReturnType<typeof LineItemId.create>;
+```
+
+### 2. Create a Money value object
+
+```ts
+import { ValueObject } from '@tact-ddd/core';
+
+class Money extends ValueObject {
+	constructor(
+		public readonly amount: number,
+		public readonly currency: string,
+	) {
+		super();
+	}
+
+	protected getEqualityComponents(): readonly unknown[] {
+		return [this.amount, this.currency];
+	}
+
+	add(other: Money): Money {
+		ensure(
+			this.currency === other.currency,
+			'CURRENCY_MISMATCH',
+			'Cannot add different currencies',
+		);
+		return new Money(this.amount + other.amount, this.currency);
+	}
+}
+```
+
+### 3. Create a LineItem entity
+
+```ts
+import { Entity } from '@tact-ddd/core';
+
+class LineItem extends Entity<LineItemId> {
+	constructor(
+		id: LineItemId,
+		public readonly productName: string,
+		public readonly price: Money,
+		public readonly quantity: number,
+	) {
+		super(id);
+		ensure(quantity > 0, 'INVALID_QUANTITY', 'Quantity must be positive');
+	}
+
+	get total(): Money {
+		return new Money(this.price.amount * this.quantity, this.price.currency);
+	}
+}
+```
+
+### 4. Build the Order aggregate root
+
+```ts
+import { AggregateRoot } from '@tact-ddd/core';
+import { type DomainEvent, createDomainEvent } from '@tact-ddd/events';
+import { ensure } from '@tact-ddd/core';
+
+class Order extends AggregateRoot<OrderId, DomainEvent<OrderId>> {
+	private readonly _lineItems: LineItem[] = [];
+
+	constructor(id: OrderId) {
+		super(id);
+	}
+
+	get lineItems(): readonly LineItem[] {
+		return this._lineItems;
+	}
+
+	addLineItem(item: LineItem): void {
+		this._lineItems.push(item);
+		this.addDomainEvent(
+			createDomainEvent('LineItemAdded', this.id, {
+				lineItemId: item.id,
+				productName: item.productName,
+			}),
+		);
+	}
+
+	place(): void {
+		ensure(
+			this._lineItems.length > 0,
+			'ORDER_EMPTY',
+			'Cannot place an order with no line items',
+		);
+		this.addDomainEvent(
+			createDomainEvent('OrderPlaced', this.id, {
+				itemCount: this._lineItems.length,
+			}),
+		);
+	}
+}
+```
+
+### 5. Use the aggregate
+
+```ts
+const order = new Order(OrderId.create());
+
+const item = new LineItem(
+	LineItemId.create(),
+	'TypeScript Handbook',
+	new Money(29.99, 'USD'),
+	2,
+);
+
+order.addLineItem(item);
+order.place();
+
+const events = order.pullDomainEvents();
+console.log(events);
+// [
+//   { name: 'LineItemAdded', aggregateId: 'ord_...', lineItemId: 'li_...', ... },
+//   { name: 'OrderPlaced', aggregateId: 'ord_...', itemCount: 1, ... }
+// ]
+```
+
+## What's next
+
+<Cards>
+  <Card title="Domain Events Workflow" href="/docs/tutorials/domain-events-workflow">
+    Learn how to dispatch these events to handlers
+  </Card>
+  <Card title="Aggregate Concepts" href="/docs/concepts/aggregates-and-consistency">
+    Understand aggregate boundaries and consistency rules
+  </Card>
+</Cards>
