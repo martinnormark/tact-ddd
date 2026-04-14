@@ -1,10 +1,11 @@
 import { docs } from 'fumadocs-mdx:collections/server';
 import { type InferPageType, loader } from 'fumadocs-core/source';
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
+import { withBasePath } from '@/lib/site';
 
 // See https://fumadocs.dev/docs/headless/source-api for more info
 export const source = loader({
-	baseUrl: '/docs',
+	baseUrl: withBasePath('/docs'),
 	source: docs.toFumadocsSource(),
 	plugins: [lucideIconsPlugin()],
 });
@@ -14,14 +15,6 @@ export function getPageImage(page: InferPageType<typeof source>) {
 
 	return {
 		segments,
-		url: `/og/docs/${segments.join('/')}`,
+		url: withBasePath(`/og/docs/${segments.join('/')}`),
 	};
-}
-
-export async function getLLMText(page: InferPageType<typeof source>) {
-	const processed = await page.data.getText('processed');
-
-	return `# ${page.data.title}
-
-${processed}`;
 }
