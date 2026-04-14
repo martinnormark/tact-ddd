@@ -4,6 +4,8 @@
 		"tutorials",
 		"guides",
 		"reference",
-		"concepts"
+		"concepts",
+		"---",
+		"[llms-full.txt](/llms-full.txt)"
 	]
 }
