@@ -105,6 +105,22 @@ async function generateSitemap() {
 async function generateRobotsTxt() {
 	const sitemapUrl = canonicalUrl('/sitemap.xml').replace(/\/$/, '');
 
+	const aiBots = [
+		'GPTBot',
+		'OAI-SearchBot',
+		'Claude-Web',
+		'anthropic-ai',
+		'Google-Extended',
+		'Amazonbot',
+		'Applebot-Extended',
+		'Bytespider',
+		'CCBot',
+	];
+
+	const aiRules = aiBots
+		.map((bot) => `User-agent: ${bot}\nAllow: /\nDisallow: /api/`)
+		.join('\n\n');
+
 	const content = [
 		'# robots.txt – tact-ddd documentation',
 		'# https://www.rfc-editor.org/rfc/rfc9309',
@@ -112,6 +128,9 @@ async function generateRobotsTxt() {
 		'User-agent: *',
 		'Allow: /',
 		'Disallow: /api/',
+		'',
+		'# AI crawlers – explicitly allowed for open-source documentation',
+		aiRules,
 		'',
 		`Sitemap: ${sitemapUrl}`,
 		'',
