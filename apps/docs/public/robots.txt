@@ -1,0 +1,7 @@
+# robots.txt – tact-ddd documentation
+# https://www.rfc-editor.org/rfc/rfc9309
+
+# Allow all crawlers by default
+User-agent: *
+Allow: /
+Disallow: /api/
