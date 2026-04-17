@@ -10,6 +10,8 @@ dist
 apps/docs/.next/
 apps/docs/public/llms-full.txt
 apps/docs/public/og/
+apps/docs/public/robots.txt
+apps/docs/public/sitemap.xml
 
 # code coverage
 coverage

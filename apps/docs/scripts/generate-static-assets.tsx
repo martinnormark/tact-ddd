@@ -3,10 +3,13 @@ import path from 'node:path';
 import { ImageResponse } from 'next/og';
 import { generate as DefaultImage } from 'fumadocs-ui/og';
 import { getPageImage, source } from '@/lib/source';
+import { BASE_PATH, SITE_ORIGIN } from '@/lib/site';
 
 const publicDir = path.join(process.cwd(), 'public');
 const llmsPath = path.join(publicDir, 'llms-full.txt');
 const ogDir = path.join(publicDir, 'og', 'docs');
+const sitemapPath = path.join(publicDir, 'sitemap.xml');
+const robotsPath = path.join(publicDir, 'robots.txt');
 
 function parseFrontmatter(raw: string): {
 	readonly content: string;
@@ -73,5 +76,49 @@ async function generateOgImages() {
 	}
 }
 
+function canonicalUrl(urlPath: string): string {
+	const withBase = BASE_PATH ? `${BASE_PATH}${urlPath}` : urlPath;
+	const withSlash = withBase.endsWith('/') ? withBase : `${withBase}/`;
+
+	return `${SITE_ORIGIN}${withSlash}`;
+}
+
+async function generateSitemap() {
+	const pages = source.getPages();
+
+	const urls = [
+		canonicalUrl('/'),
+		...pages.map((page) => canonicalUrl(page.url)),
+	];
+
+	const xml = [
+		'<?xml version="1.0" encoding="UTF-8"?>',
+		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+		...urls.map((loc) => `  <url>\n    <loc>${loc}</loc>\n  </url>`),
+		'</urlset>',
+		'',
+	].join('\n');
+
+	await writeFile(sitemapPath, xml);
+}
+
+async function generateRobotsTxt() {
+	const sitemapUrl = canonicalUrl('/sitemap.xml').replace(/\/$/, '');
+
+	const content = [
+		'# robots.txt – tact-ddd documentation',
+		'# https://www.rfc-editor.org/rfc/rfc9309',
+		'',
+		'User-agent: *',
+		'Allow: /',
+		'Disallow: /api/',
+		'',
+		`Sitemap: ${sitemapUrl}`,
+		'',
+	].join('\n');
+
+	await writeFile(robotsPath, content);
+}
+
 await mkdir(publicDir, { recursive: true });
-await Promise.all([generateLlmsText(), generateOgImages()]);
+await Promise.all([generateLlmsText(), generateOgImages(), generateSitemap(), generateRobotsTxt()]);
