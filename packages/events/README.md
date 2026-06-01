@@ -193,14 +193,11 @@ class Workspace extends AggregateRoot<WorkspaceId, WorkspaceCreated | WorkspaceR
 // In your application service
 const workspace = Workspace.create(workspaceId, 'My Workspace', 'user-123', 'pro');
 
-// Get domain events from aggregate
-const domainEvents = workspace.getDomainEvents();
+// Pull domain events from aggregate. This also clears the aggregate event buffer.
+const domainEvents = workspace.pullDomainEvents();
 
 // Dispatch them
 await dispatcher.publishAll(domainEvents);
-
-// Clear events after successful dispatch
-workspace.clearDomainEvents();
 ```
 
 ### Integration Event Bus
@@ -260,8 +257,8 @@ class CreateWorkspaceService {
 		// 2. Persist aggregate
 		await this.repository.save(workspace);
 
-		// 3. Get domain events
-		const domainEvents = workspace.getDomainEvents();
+		// 3. Pull domain events. This also clears the aggregate event buffer.
+		const domainEvents = workspace.pullDomainEvents();
 
 		// 4. Dispatch domain events (in-process side effects)
 		await this.domainDispatcher.publishAll(domainEvents);
@@ -272,8 +269,6 @@ class CreateWorkspaceService {
 		// 6. Publish integration events (via outbox pattern)
 		await this.integrationBus.publishAll(integrationEvents);
 
-		// 7. Clear domain events
-		workspace.clearDomainEvents();
 	}
 }
 ```

@@ -107,10 +107,14 @@ class Order extends AggregateRoot<OrderId, OrderPlaced> {
 	private status: 'pending' | 'confirmed';
 
 	static place(orderId: OrderId, customerId: string): Order {
-		const order = new Order(orderId, 'OrderPlaced');
-		order.status = 'pending';
-		order.raise(new OrderPlaced(orderId, customerId));
+		const order = new Order(orderId);
+		order.addDomainEvent(new OrderPlaced(orderId, customerId));
 		return order;
+	}
+
+	private constructor(orderId: OrderId) {
+		super(orderId);
+		this.status = 'pending';
 	}
 
 	confirm(): void {
